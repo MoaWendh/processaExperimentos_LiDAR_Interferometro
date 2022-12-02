@@ -19,11 +19,11 @@ pcFull= pcDenoised{1,1};
 % pode ser adotado em métricas para registro tanto 'pointToPlane' quanto
 % 'planeToPlane'. 
 if (param.Ramdom)
-   pcDownSampleRef= pcdownsample(pc{1,1},'random',param.percentage); 
+   pcDownSampleRef= pcdownsample(pc,'random',param.percentage); 
 elseif (param.GridAverage)
-   pcDownSampleRef= pcdownsample(pc{1,1}, 'gridAverage', param.gridSize);
+   pcDownSampleRef= pcdownsample(pc, 'gridAverage', param.gridSize);
 elseif (param.NonUniforme)
-   pcDownSampleRef= pcdownsample(pc{1,1}, 'nonuniformGridSample',param.maxNumPoints);
+   pcDownSampleRef= pcdownsample(pc, 'nonuniformGridSample',param.maxNumPoints);
 end
 
 % Cria uma tranformação neutra
