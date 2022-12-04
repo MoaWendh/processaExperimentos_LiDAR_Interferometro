@@ -14,8 +14,8 @@ close all
 % Principais parâmetros.
 % N é o número de posições onde o LiDAR gerou as nuvens de pontos.
 
-path.Base= 'D:\Moacir\ensaios\2022.11.25 - LiDAR Com Interferômetro\experimento_01\pcd';
-path.ValInterferometro= 'D:\Moacir\ensaios\2022.11.25 - LiDAR Com Interferômetro\experimento_01\interferometro_exp_01.mat';
+path.Base= 'C:\Projetos\Matlab\Experimentos\2022.11.25 - LiDAR Com Interferômetro\experimento_01\pcd';
+path.ValInterferometro= 'C:\Projetos\Matlab\Experimentos\2022.11.25 - LiDAR Com Interferômetro\experimento_01\interferometro_exp_01.mat';
 
 name.FileBase= '\2022_11_25_01_';
 name.FolderBase= '\2022_11_25_01_';
@@ -26,19 +26,26 @@ param.fileIni= 2;
 param.fileEnd= 2;
 param.showPC= 0;
 param.showPCReg= 0;
-param.showResults= 1;
+param.showData= 0;
 
 %Algoritmos para registros das PCS
+param.algorithmReg= 'ICP';
+%param.algoritmo= 'CPD';
+%param.algoritmo= 'NDT';
+
 param.useICP= 1;
 param.useCPD= 0;
 param.useNDT= 0; 
-param.testaVariacaoGridSize= 0;
+param.testaVariacaoGridSize= 1;
 param.testaVariacaoMetricaRegistro= 0;
 param.NumVariacaoGridSize= 10;
 param.NumVariacaoMetrica= 2;
 
 %Algoritmos para subamostrar as PCS
-param.Ramdom= 1;
+param.algorithmSubAmostra= 'Random';
+%param.algorithmReg= 'gridAverage';
+%param.algorithmReg= 'nonUniformGrid';
+
 param.GridAverage= 0;
 param.NonUniforme= 0;
 
@@ -53,15 +60,19 @@ param.NonUniforme= 0;
 % apenas a quantiade de pontos contida no volume.
 % Também define a métrica do registro em função do algoritmo de
 % subamostragem, se é ponto-a-ponto ou ponto-a-plano.
-if (param.Ramdom)
-   param.registerMetric='pointToPoint'; 
-   param.percentage= 0.2; % Usado no método 1 -Percentual de redução da PC entre 0 e 1;
-elseif (param.GridAverage)
-   param.registerMetric='pointToPlane';
-   param.gridSize= 0.3; % Usado no método 2- Define o grid do volume cúbico, 3D Box, em metros.
-elseif (param.NonUniforme)
-   param.registerMetric='pointToPlane';
-   param.maxNumPoints= 6; % Usado no método 3- max. quantidadde de pontos para 3D Box, o mínimo é 6.
+
+switch (param.algorithmSubAmostra)
+    case 'Random'
+        param.registerMetric='pointToPoint'; 
+        param.percentage= 0.2; % Usado no método 1 -Percentual de redução da PC entre 0 e 1; 
+    case 'gridAverage'
+        param.registerMetric='pointToPlane';
+        param.gridSize= 0.3; % Usado no método 2- Define o grid do volume cúbico, 3D Box, em metros.
+    case 'nonUniformGrid'
+        param.registerMetric='pointToPlane';
+        param.maxNumPoints= 6; % Usado no método 3- max. quantidadde de pontos para 3D Box, o mínimo é 6.
+    otherwise 
+        warning('Unexpected plot type. No plot created.');
 end
 
 % Parametro usado para faze o merge das PCs
@@ -74,18 +85,28 @@ medicoes= load(path.ValInterferometro);
 % função fCarregaPCs, qeu retorn a nuvemde pontos bruta e filtrada:
 [pc pcDenoised]= fCarregaPCs(path, name, param);
 
+%%
 if (param.testaVariacaoGridSize)
-    % Nesta condição irá avaliar o deempenho dos registros considerando a
-    % variação do gridSize usado para subamostrar as PCs.
+    % Nesta seção é avaliado o desempenho dos registros considerando a
+    % variação do "gridSize" usado para subamostrar as PCs.
     % Inicializa o valor do gridSize:
-    param.gridSize= 1;
+    param.gridSizeIni= 1;
     for (i=1:param.NumVariacaoGridSize)
-        param.gridSize= (i/100)*param.gridSize;
+        param.gridSize(i)= (i/100)*param.gridSizeIni;
         % Chama a função fRegistraPC_ICP para registrar as PCs do experimento.
         % Esta função retorno a transformação de corpo rígido para cada PC gerada.
         [tform{i} pcFull{i}]= fRegistraPC_ICP(pc, pcDenoised, param);       
         % Efetua a análise do desempenho do registro das PCs
-        [vetorTransLiDAR deslocamentoInterferometro]= fAnalisaDados(tform, medicoes, pcFull, param);
+        [vetorTransLiDAR{i} deslocamentoInterferometro{i} erro{i}]= fAnalisaDados(tform{i}, medicoes, pcFull{i}, param);
+        if (param.showData)
+            fExibeDados(vetorTransLiDAR{i}, deslocamentoInterferometro{i}, erro{i}, pcFull{i}, param);
+        end
+        erroXMedio(i)= erro{i}.XMedio;
+        DP(i)= erro{i}.DP;
+        erroMax(i)= erro{i}.Max;
+        erroMin(i)= erro{i}.Min;
+        num(i)= i;
+        
     end
 else
     % Faz a leitura de todas as nuvens de pontos no formato '.pcd'. chamando a 
@@ -96,8 +117,16 @@ else
     [tform pcFull]= fRegistraPC_ICP(pc, pcDenoised, param);
     
     % Efetua a análise do desempenho do registro das PCs
-    [vetorTransLiDAR deslocamentoInterferometro erro ]= fAnalisaDados(tform, medicoes, pcFull, param);
+    [vetorTransLiDAR deslocamentoInterferometro erro]= fAnalisaDados(tform, medicoes, pcFull, param);
+    
+    %%
+    % chama a função para exibir os resulatdos da análise dos dados:
+    if (param.showData)
+        fExibeDados(vetorTransLiDAR, deslocamentoInterferometro, erro, pcFull, param);
+    end
 end
 
-
-
+%%
+t=table(num',param.gridSize',erroXMedio', DP', erroMax',erroMin');
+t.Properties.VariableNames = {'num.','gridZise','erroMedio','DP','erroMax','erroMin'};
+a=0;
