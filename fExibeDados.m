@@ -54,7 +54,7 @@ title(ax4,texto,'Color','k');
 % Exibe a PC concatenada em uma nova figura.
 f2=figure;
 pcshow(pcFull);
-titulo= [int2str(param.numFolders), ' Nuvens de pontos concatenadas.']
+titulo= ['PCs concatenadas= ', int2str(param.numFolders), '  Algortimo Reg.= ', param.algorithmReg,' Algorithm subAmostr= ', param.algorithmSubAmostra, ' gridSize= ', num2str(param.gridSize) ]
 title(titulo);
 f2.Position=[1250,100,1200,900]
 

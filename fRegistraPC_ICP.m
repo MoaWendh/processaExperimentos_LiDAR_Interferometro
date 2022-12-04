@@ -18,14 +18,18 @@ pcFull= pcDenoised{1,1};
 % 'gridSize' define a aresta de um cubo 3D, em metros. O 'gridAverage' 
 % pode ser adotado em métricas para registro tanto 'pointToPlane' quanto
 % 'planeToPlane'. 
-if (param.Ramdom)
-   pcDownSampleRef= pcdownsample(pc{1,1},'random',param.percentage); 
-elseif (param.GridAverage)
-   pcDownSampleRef= pcdownsample(pc{1,1}, 'gridAverage', param.gridSize);
-elseif (param.NonUniforme)
-   pcDownSampleRef= pcdownsample(pc{1,1}, 'nonuniformGridSample',param.maxNumPoints);
-end
 
+switch (param.algorithmSubAmostra)
+    case 'Random'
+        pcDownSampleRef= pcdownsample(pc{1,1},'random',param.percentage); 
+    case 'gridAverage'
+        pcDownSampleRef= pcdownsample(pc{1,1}, 'gridAverage', param.gridSize);
+    case 'nonUniformGrid'
+        pcDownSampleRef= pcdownsample(pc{1,1}, 'nonuniformGridSample',param.maxNumPoints);
+    otherwise 
+        warning('Unexpected plot type. No plot created.');
+end
+    
 % Cria uma tranformação neutra
 tformAccum= affine3d;
 
@@ -37,23 +41,29 @@ for (ctPC=2:param.numFolders)
    % 'gridSize' define a aresta de um cubo 3D, em metros. O 'gridAverage' 
    % pode ser adotado em métricas para registro tanto 'pointToPlane' quanto
    % 'planeToPlane'. 
-   if (param.Ramdom)
-       pcDownSample= pcdownsample(pcAux,'random',param.percentage);
-   elseif (param.GridAverage)
-       pcDownSample= pcdownsample(pcAux, 'gridAverage', param.gridSize);
-   elseif (param.NonUniforme)
-       pcDownSample= pcdownsample(pcAux, 'nonuniformGridSample',param.maxNumPoints);
-   end
+    switch (param.algorithmSubAmostra)
+        case 'Random'
+            pcDownSample= pcdownsample(pcAux,'random',param.percentage); 
+        case 'gridAverage'
+            pcDownSample= pcdownsample(pcAux, 'gridAverage', param.gridSize);
+        case 'nonUniformGrid'
+            pcDownSample= pcdownsample(pcAux, 'nonuniformGridSample',param.maxNumPoints);
+        otherwise 
+            warning('Escolha um dos três algoritmos de subamostragem.');
+    end
    
    % Calcula a tranformação de corpo rígido, podem ser usados 3 tipos de
-   % algoritmos, ICP, CPD e NDT
-   if (param.useICP)
-        tformAux = pcregistericp(pcDownSample, pcDownSampleRef, 'Metric', param.registerMetric, 'Extrapolate', true);
-   elseif (param.useCPD)
-        tformAux = pcregistercpd(pcDownSample, pcDownSampleRef);   
-   elseif (param.useNDT)
-        tformAux = pcregisterndt(pcDownSample, pcDownSampleRef);
-   end
+   % algoritmos, ICP, CPD e NDT  
+   switch (param.algorithmReg)
+        case 'ICP'
+            tformAux = pcregistericp(pcDownSample, pcDownSampleRef, 'Metric', param.registerMetric, 'Extrapolate', true); 
+        case 'CPD'
+            tformAux = pcregistercpd(pcDownSample, pcDownSampleRef); 
+        case 'NDT'
+            tformAux = pcregisterndt(pcDownSample, pcDownSampleRef);
+        otherwise 
+            warning('Escolha um dos três algoritmos de registro: ICP, CPD ou NDT.');
+    end
    
    % Acumula a transformação a cada iteração. 
    tformAccum = affine3d(tformAux.T * tformAccum.T);
