@@ -21,11 +21,11 @@ pcFull= pcDenoised{1,1};
 
 switch (param.algorithmSubAmostra)
     case 'Random'
-        pcDownSampleRef= pcdownsample(pc{1,1},'random',param.percentage); 
+        pcDownSampleRef= pcdownsample(pc{1,1},'random',param.DownSampleAtual); 
     case 'gridAverage'
-        pcDownSampleRef= pcdownsample(pc{1,1}, 'gridAverage', param.gridSize);
+        pcDownSampleRef= pcdownsample(pc{1,1}, 'gridAverage', param.DownSampleAtual);
     case 'nonUniformGrid'
-        pcDownSampleRef= pcdownsample(pc{1,1}, 'nonuniformGridSample',param.maxNumPoints);
+        pcDownSampleRef= pcdownsample(pc{1,1}, 'nonuniformGridSample',param.DownSampleAtual);
     otherwise 
         warning('Unexpected plot type. No plot created.');
 end
@@ -43,11 +43,11 @@ for (ctPC=2:param.numFolders)
    % 'planeToPlane'. 
     switch (param.algorithmSubAmostra)
         case 'Random'
-            pcDownSample= pcdownsample(pcAux,'random',param.percentage); 
+            pcDownSample= pcdownsample(pcAux,'random',param.DownSampleAtual); 
         case 'gridAverage'
-            pcDownSample= pcdownsample(pcAux, 'gridAverage', param.gridSize);
+            pcDownSample= pcdownsample(pcAux, 'gridAverage',param.DownSampleAtual);
         case 'nonUniformGrid'
-            pcDownSample= pcdownsample(pcAux, 'nonuniformGridSample',param.maxNumPoints);
+            pcDownSample= pcdownsample(pcAux, 'nonuniformGridSample',param.DownSampleAtual);
         otherwise 
             warning('Escolha um dos três algoritmos de subamostragem.');
     end
