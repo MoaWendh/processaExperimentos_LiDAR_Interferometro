@@ -12,7 +12,7 @@ pathToSave= sprintf('%s%s',param.path.Base, param.path.PCSeg);
 
 % Se a pasta onde serão salvas as PCs segmentadas não existir ela será criada:
 if ~isfolder(pathToSave)
-    mkdir(pathToSavePCSeg);
+    mkdir(pathToSave);
 end
 
 infoFolder= dir(fullfile(pathToRead, '*.pcd'));
