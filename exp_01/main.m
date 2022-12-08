@@ -26,13 +26,14 @@ name.FileBase= '\2022_11_25_01_';
 name.FolderBase= '\2022_11_25_01_';
 name.extPC= 'pcd';
 param.numFolders= 15;
-param.fileIni= 2;
-param.fileEnd= 2;
+% Parametros que definem quantas PCs serão lidas por folder:
+param.fileIni= 3;
+param.fileEnd= 3;
 
 % Parâmetros para exibição de dados:
 param.showPC= 0;
 param.showPCReg= 0;
-param.showData= 1;
+param.showData= 0;
 
 % Parametros para definição do algoritmo usado para o registro das PCS
 param.algorithmReg= 'ICP';
@@ -50,7 +51,7 @@ param.mergeSize= 0.001;
 % Parâmetros para avaliação dos algoritmos:
 param.testaVariacaoGridSize= 0;
 param.testaVariacaoMetricaRegistro= 0;
-param.NumVariacaoGridSize= 50;
+param.NumVariacaoGridSize= 30;
 param.NumVariacaoMetrica= 2;
 
 % Parâmetros para efetuar o downSample da PC. No Matalab tem 3 métodos:
@@ -87,12 +88,18 @@ medicoes= load(path.ValInterferometro);
 
 % Faz a leitura de todas as nuvens de pontos no formato '.pcd'. chamando a 
 % função fCarregaPCs, qeu retorn a nuvemde pontos bruta e filtrada:
+msg = sprintf('Carregando %d nuvens de pontos...',param.numFolders);
+disp(msg);
 [pc pcDenoised]= fCarregaPCs(path, name, param);
 
 %%
 if (param.testaVariacaoGridSize)
     % Nesta seção é avaliado o desempenho dos registros considerando a
     % variação do "gridSize" usado para subamostrar as PCs.
+    fprintf(' Testando %d parâmetros para os algoritmos: \n',param.NumVariacaoGridSize);
+    fprintf(' - Registro: %s \n', param.algorithmReg)
+    fprintf(' - Subamostrage: %s\n',param.algorithmSubAmostra);
+    fprintf('Val. parâm. sub-amostragem: \n ');
     for (i=1:param.NumVariacaoGridSize)
         switch (param.algorithmSubAmostra)
             case 'Random'
@@ -118,18 +125,18 @@ if (param.testaVariacaoGridSize)
         DP(i)= erro{i}.DP;
         erroMax(i)= erro{i}.Max;
         erroMin(i)= erro{i}.Min;
-        num(i)= i;     
+        num(i)= i; 
+        fprintf(' %d= %2.4f\n',i, param.DownSample(i));
+
     end
     % Montam tabela com os resultados:
-    t=table(num',param.DownSample',erroXMedio', DP', erroMax',erroMin')
+    t=table(num',param.DownSample',erroXMedio', DP', erroMax',erroMin');
     t.Properties.VariableNames = {'num.','gridZise','erroMedio','DP','erroMax','erroMin'}
+
 else
     param.DownSampleAtual= param.DownSampleIni;
-    % Faz a leitura de todas as nuvens de pontos no formato '.pcd'. chamando a
-    % função fCarregaPCs, qeu retorn a nuvemde pontos bruta e filtrada:
-    [pc pcDenoised]= fCarregaPCs(path, name, param);
 
-    % Chama a função para registrar apenas 1 vez:
+    % Chama a função para registrar as PCs:
     [tform pcFull]= fRegistraPC_ICP(pc, pcDenoised, param);
     
     % Efetua a análise do desempenho do registro das PCs
@@ -143,6 +150,12 @@ else
     num= 1;
     t=table(num', param.DownSampleAtual', erro.XMedio', erro.DP', erro.Max', erro.Min');
     t.Properties.VariableNames = {'num.','gridZise','erroMedio','DP','erroMax','erroMin'}
+    
+    % Salva a PCs registrada e concatenada:
+    %%
+    nameFile= sprintf('pcfull.%s', name.extPC);
+    fullPathFile = fullfile(path.Base, nameFile);
+    pcwrite(pcFull,fullPathFile);
 end
 
 a=0;

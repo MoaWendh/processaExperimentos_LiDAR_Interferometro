@@ -7,11 +7,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [tform pcFull]= fRegistraPC_ICP(pc, pcDenoised, param)
-clc;
-close all
-
 % Toma a primeira PC como referência.
-pcFull= pcDenoised{1,1};
+pcFull= pc{1,1};
 
 % Faz uma sub-amostragem na PC, este procedimento melhora o desempenho
 % da função pcregistericp(). Usando o 'gridAverage' com oparâmetro 

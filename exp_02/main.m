@@ -1,24 +1,21 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Moacir Wendhausen
 % 26/11/2022
-% Código usado para abrir, processar e registraa as nuven de pontos do experimento
-% feito no lab do CERTI.
+% Código usado para abrir, processar e ajustar um plano a PC segmetada que contpem 
+% um plano reconstruído com o LiDAR 
 % Data do experimento: 25/11/2022
-% Padrões: pirâmede com esfereas,simulacro riser PVC e plano. 
+% Padrões: Plano. 
 % Instrumentos: LiDAR PuckLite + Interferômetro.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 clc;
 close all
 
-%Passado pelo Vinicius
-%profile clear       % clean profile history
-%profile -memory on  % Bring memory info
-
 % Principais parâmetros.
 % N é o número de posições onde o LiDAR gerou as nuvens de pontos.
 
-path.Base= 'C:\Projetos\Matlab\Experimentos\2022.11.25 - LiDAR Com Interferômetro\experimento_01\pcd';
+%path.Base= 'C:\Projetos\Matlab\Experimentos\2022.11.25 - LiDAR Com Interferômetro\experimento_01\pcd';
+path.Base= 'C:\Users\mwend\Downloads\pcd';
 path.ValInterferometro= 'C:\Projetos\Matlab\Experimentos\2022.11.25 - LiDAR Com Interferômetro\experimento_01\interferometro_exp_01.mat';
 
 % Parâmetros gerais:
@@ -30,7 +27,7 @@ param.fileIni= 2;
 param.fileEnd= 2;
 
 % Parâmetros para exibição de dados:
-param.showPC= 0;
+param.showPC= 1;
 param.showPCReg= 0;
 param.showData= 1;
 
