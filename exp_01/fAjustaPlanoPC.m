@@ -8,25 +8,32 @@ function fAjustaPlanoPC(param)
 clc;
 close all;
 
-pathBase= param.path.Base;
-pathToRead= param.path.PCSegmentada;
-pathToSave= param.path.PCPlaneAdjusted;
+pathToRead= sprintf('%s%s',param.path.Base, param.path.PCSeg); 
+pathToSave= sprintf('%s%s',param.path.Base, param.path.PCPlaneAdjuste);
 
-for (i=param.startPC:param.stopPC)
+% Se a pasta onde serão salvas as PCs segmentadas não existir ela será criada:
+if ~isfolder(pathToSave)
+    mkdir(pathToSave);
+end
+
+infoFolder= dir(fullfile(pathToRead, '*.pcd'));
+numPCs= length(infoFolder(not([infoFolder.isdir])));
+
+for (i=1:numPCs)
     close all;
     % Especifica a nuvem de pontos de referênica a ser lida. Path completo.  
-    nameFile= sprintf('%0.4d.%s',i,param.ext.PC);
-    fullPath= fullfile(pathBase,pathToRead,nameFile);
+    nameFile= sprintf('%0.4d.%s', i, param.name.extPC);
+    fullPath= fullfile(pathToRead, nameFile);
     % Efetua a leitura da nuvem depontos de referência. 
     pc= pcread(fullPath);
     % Filtra o ruído da nuvem de pontos de referência.
     pcDenoised = pcdenoise(pc);   
 
-    [model1,inlierIndices,outlierIndices]= pcfitplane(pc, param.maxDistance);
+    [model1,inlierIndices,outlierIndices]= pcfitplane(pc, param.val.maxDistance);
     pcPlane= select(pc,inlierIndices);
     remainPtCloud= select(pc,outlierIndices);
     
-    fullPath= fullfile(pathBase,pathToSave, nameFile);
+    fullPath= fullfile(pathToSave, nameFile);
     pcwrite(pcPlane,fullPath);
 end
 end

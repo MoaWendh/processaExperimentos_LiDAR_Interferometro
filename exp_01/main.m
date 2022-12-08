@@ -23,6 +23,7 @@ param.path.Base= 'D:\Moacir\ensaios\2022.11.25 - LiDAR Com Interferometro\experi
 param.path.PC= '\pcd';
 param.path.PCReg= '\Reg'; % Folder onde serão salvas as PCs registradas
 param.path.PCSeg= '\Seg'; % Folder onde serão salvas as PCS segmentadas com o ROI referente ao plano.
+param.path.PCPlaneAdjuste= '\Pln'; % Folder onde serão salvas as PCS segmentadas com o ROI referente ao plano.
 
 % Captura o número de folder contendo as PCs:
 pathAux= sprintf('%s%s',param.path.Base,param.path.PC);
@@ -46,18 +47,21 @@ param.val.fileEnd= 3;
 param.val.minDistance= 0.05; 
 param.val.minPoints= 800;
 
-% Parâmetros comn flags para habilitação de algoritmos exibição de dados:
+%Parâmetros para ajustar plano:
+param.val.maxDistance= 0.02;
+
+% Parâmetros com flags para habilitar a exibição de dados:
 param.show.PC= 0;
 param.show.PCReg= 0;
 param.show.Data= 0;
 param.show.PCSegmented= 1;
 
-% Habiliota a variação do griSize para avaliar o efeto sobre o desempenho
-% do registro das PCs.
-param.hab.TesteRegistro= 0;
+% Flags que habilitam algumas funções: 
+param.hab.TesteRegistro= 0; % Habilita a variação dos parâmetros para teste de registro.
+param.hab.Registra     = 1; % Se 1 Habilita o registro das PCs.
+param.hab.Segmenta     = 0; % Se 1 Habilita a segmentação das PCs.
+param.hab.AjustaPlano  = 0; % Se 1 Habilita a segmentação das PCs.
 param.hab.VariacaoMetricaRegistro= 0;
-param.hab.Registra= 0; % Se 1 Habilita o registro das PCs.
-param.hab.Segmenta= 1; % Se 1 Habilita a segmentação das PCs.
 
 % Parametros para definição do algoritmo usado para o registro das PCS
 param.algorithm.Reg= 'ICP';
@@ -120,9 +124,9 @@ if (param.hab.Registra)
     [pc pcDenoised]= fCarregaPCs(param);
     
     param.val.DownSampleAtual= param.val.DownSampleIni;
-
+    %%
     % Chama a função fRegistraPC para registrar as PCs do experimento.
-    [tform{i} pcFull{i}]= fRegistraPC(pc, pcDenoised, param);   
+    [tform pcFull]= fRegistraPC(pc, pcDenoised, param);   
 end
 
 if (param.hab.TesteRegistro)
@@ -169,6 +173,10 @@ end
 % Efetua a segmentação das PCs para extrair ROI que é o plano de referencia
 if (param.hab.Segmenta)
    fSegmentaPC(param);
+end
+
+if (param.hab.AjustaPlano)
+    fAjustaPlanoPC(param);
 end
 
 a=0;
