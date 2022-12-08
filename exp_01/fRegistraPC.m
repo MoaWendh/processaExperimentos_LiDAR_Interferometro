@@ -6,7 +6,7 @@
 % Instrumentos: LiDAR PuckLite + Interferômetro.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [tform pcFull]= fRegistraPC_ICP(pc, pcDenoised, param)
+function [tform pcFull]= fRegistraPC(pc, pcDenoised, param)
 % Toma a primeira PC como referência.
 pcFull= pc{1,1};
 
@@ -16,13 +16,13 @@ pcFull= pc{1,1};
 % pode ser adotado em métricas para registro tanto 'pointToPlane' quanto
 % 'planeToPlane'. 
 
-switch (param.algorithmSubAmostra)
+switch (param.algorithm.SubSample)
     case 'Random'
-        pcDownSampleRef= pcdownsample(pc{1,1},'random',param.DownSampleAtual); 
+        pcDownSampleRef= pcdownsample(pc{1,1},'random',param.val.DownSampleAtual); 
     case 'gridAverage'
-        pcDownSampleRef= pcdownsample(pc{1,1}, 'gridAverage', param.DownSampleAtual);
+        pcDownSampleRef= pcdownsample(pc{1,1}, 'gridAverage', param.val.DownSampleAtual);
     case 'nonUniformGrid'
-        pcDownSampleRef= pcdownsample(pc{1,1}, 'nonuniformGridSample',param.DownSampleAtual);
+        pcDownSampleRef= pcdownsample(pc{1,1}, 'nonuniformGridSample',param.val.DownSampleAtual);
     otherwise 
         warning('Unexpected plot type. No plot created.');
 end
@@ -30,7 +30,7 @@ end
 % Cria uma tranformação neutra
 tformAccum= affine3d;
 
-for (ctPC=2:param.numFolders)
+for (ctPC=2:param.val.numFolders)
    pcAux= pc{ctPC,1};
    
    % Faz uma sub-amostragem no PC, este procedimento melhora o desempenho
@@ -38,22 +38,22 @@ for (ctPC=2:param.numFolders)
    % 'gridSize' define a aresta de um cubo 3D, em metros. O 'gridAverage' 
    % pode ser adotado em métricas para registro tanto 'pointToPlane' quanto
    % 'planeToPlane'. 
-    switch (param.algorithmSubAmostra)
+    switch (param.algorithm.SubSample)
         case 'Random'
-            pcDownSample= pcdownsample(pcAux,'random',param.DownSampleAtual); 
+            pcDownSample= pcdownsample(pcAux,'random',param.val.DownSampleAtual); 
         case 'gridAverage'
-            pcDownSample= pcdownsample(pcAux, 'gridAverage',param.DownSampleAtual);
+            pcDownSample= pcdownsample(pcAux, 'gridAverage',param.val.DownSampleAtual);
         case 'nonUniformGrid'
-            pcDownSample= pcdownsample(pcAux, 'nonuniformGridSample',param.DownSampleAtual);
+            pcDownSample= pcdownsample(pcAux, 'nonuniformGridSample',param.val.DownSampleAtual);
         otherwise 
             warning('Escolha um dos três algoritmos de subamostragem.');
     end
    
    % Calcula a tranformação de corpo rígido, podem ser usados 3 tipos de
    % algoritmos, ICP, CPD e NDT  
-   switch (param.algorithmReg)
+   switch (param.algorithm.Reg)
         case 'ICP'
-            tformAux = pcregistericp(pcDownSample, pcDownSampleRef, 'Metric', param.registerMetric, 'Extrapolate', true); 
+            tformAux = pcregistericp(pcDownSample, pcDownSampleRef, 'Metric', param.val.registerMetric, 'Extrapolate', true); 
         case 'CPD'
             tformAux = pcregistercpd(pcDownSample, pcDownSampleRef); 
         case 'NDT'
@@ -69,7 +69,7 @@ for (ctPC=2:param.numFolders)
    pcAligned = pctransform(pcAux, tformAccum);
    
    % Faz a fusão das PC a cada iteração.
-   pcFull = pcmerge(pcFull, pcAligned, param.mergeSize);
+   pcFull = pcmerge(pcFull, pcAligned, param.val.mergeSize);
    
    % Armazena o PC atual na variável "pcDownSampleRef" para a próxima
    % iteração.
@@ -80,7 +80,7 @@ for (ctPC=2:param.numFolders)
    translation(ctPC-1,:)= tformAux.Translation(1,:);
    
    % Exibe o resultado do registro das PCs a cada iteração
-   if (param.showPCReg)
+   if (param.show.PCReg)
        if (ctPC==2)
            handle= figure;
        end
