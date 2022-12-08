@@ -8,7 +8,7 @@
 
 function [tform pcFull]= fRegistraPC(pc, pcDenoised, param)
 
-fprintf(' Registrando e salvando as PCs e as Tranformações de corpo rígido');
+fprintf('Registrando as PCs, salvando as PCs e a Tranformação de corpo rígido');
 
 % Toma a primeira PC como referência.
 pcFull= pc{1,1};
@@ -45,6 +45,7 @@ nameFile= sprintf('%0.4d.%s',1, param.name.extPC);
 fullPath= fullfile(pathToSavePCReg, nameFile);
 pcwrite(pc{1,1}, fullPath);
 
+path= sprintf('%s%s%s%0.4d\\', param.path.Base, param.path.PC, param.name.FolderBase, ctFolder*200);
 for (ctPC=2:length(pc))
    pcAux= pc{ctPC,1};
    
@@ -121,13 +122,15 @@ for (ctPC=2:length(pc))
    fprintf('.');
 end
 
-fprintf('\n Salvando as PCs totalmente concatenadas no arquivo "pcFull.pcd"...');
+fprintf('\nSalvando as PC full totalmente concatenada...\n');
 % Salva todas as PCs concatenadas num único arquivoa:
 nameFile= sprintf('pcFull.pcd');
 fullPath= fullfile(pathToSavePCReg, nameFile);
 pcwrite(pcFull, fullPath);
 
-fprintf('\n PCs registradas=  %d\n',ctPC);
+fprintf('\nSalvando as PC full totalmente concatenada...\n');
+
+
 
 end
 

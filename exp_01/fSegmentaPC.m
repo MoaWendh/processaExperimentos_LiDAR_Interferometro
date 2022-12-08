@@ -4,12 +4,11 @@
 % Data: 08/08/2022
 % Utilização da função "pcsegdist()" para segmentar uma nuvem de pontos.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function fSegmentaPC(param)
-clc;
+function fSegmentaPC(pc, param)
 close all;
 
 pathBase= param.path.Base;
-pathToRead= param.path.PCRotacionada; 
+pathToRead= param.path.Base; 
 pathToSave= param.path.PCSegmentada;
 
 for (i=param.startPC:param.stopPC)
