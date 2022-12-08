@@ -16,41 +16,47 @@ close all
 %profile clear       % clean profile history
 %profile -memory on  % Bring memory info
 
-% Principais parâmetros.
-% N é o número de posições onde o LiDAR gerou as nuvens de pontos.
-
+% Definição de alguns paths:
 param.path.Base= 'D:\Moacir\ensaios\2022.11.25 - LiDAR Com Interferometro\experimento_01';
+% O único path que precisa ser definido é o param.path.Base, os outros são
+% criados ao longo do código.
 param.path.PC= '\pcd';
 param.path.PCReg= '\Reg'; % Folder onde serão salvas as PCs registradas
 param.path.PCSeg= '\Seg'; % Folder onde serão salvas as PCS segmentadas com o ROI referente ao plano.
-param.path.ValoresInterferometro= 'D:\Moacir\ensaios\2022.11.25 - LiDAR Com Interferometro\experimento_01\interferometro_exp_01.mat';
 
 % Captura o número de folder contendo as PCs:
 pathAux= sprintf('%s%s',param.path.Base,param.path.PC);
 infoFolder= dir(pathAux);
 param.val.numFolders= nnz([infoFolder.isdir]) - 2;
 
-% Parâmetros gerais:
+% Definição de alguns nomes de arquivos:
 param.name.FolderBase= '\2022_11_25_01_';
 param.name.FileBase  = '\2022_11_25_01_';
 param.name.FileTForm = 'tform';
+param.name.FileDataInterferometro = '\interferometro_exp_01.mat';
 
+% definição da extensão de alguns arquivos:
 param.name.extPC= 'pcd';
 
 % Parametros que definem quantas PCs serão lidas por folder:
 param.val.fileIni= 3;
 param.val.fileEnd= 3;
 
+% Parâmetros para segemtação das PCs para definir o ROI do plano:
+param.val.minDistance= 0.1; 
+param.val.minPoints= 500;
+
 % Parâmetros comn flags para habilitação de algoritmos exibição de dados:
 param.show.PC= 0;
 param.show.PCReg= 0;
 param.show.Data= 0;
+param.show.PCSegmented= 1;
 
 % Habiliota a variação do griSize para avaliar o efeto sobre o desempenho
 % do registro das PCs.
-param.hab.TesteRegistro= 1;
+param.hab.TesteRegistro= 0;
 param.hab.VariacaoMetricaRegistro= 0;
-param.hab.Registra= 1; % Se 1 Habilita o registro das PCs.
+param.hab.Registra= 0; % Se 1 Habilita o registro das PCs.
 param.hab.Segmenta= 1; % Se 1 Habilita a segmentação das PCs.
 
 % Parametros para definição do algoritmo usado para o registro das PCS
@@ -100,7 +106,8 @@ switch (param.algorithm.SubSample)
 end
 
 % Carrega os resultados de medição feitas diretamente no interferômetro:
-medicoes= load(param.path.ValoresInterferometro);
+pathDataInterferomtero= sprintf('%s%s', param.path.Base, param.name.FileDataInterferometro);
+medicoes= load(pathDataInterferomtero);
 
 % Se "param.hab.Registro" estiver habilitado será chamada a função fRegistraPC
 % para registrar as PCs do experimento. Esta função retorno a transformação 
@@ -157,34 +164,11 @@ if (param.hab.TesteRegistro)
     % Montam tabela com os resultados:
     t=table(num',param.val.DownSample',erroXMedio', DP', erroMax',erroMin');
     t.Properties.VariableNames = {'num.','gridZise','erroMedio','DP','erroMax','erroMin'}
-
-else
-    param.val.DownSampleAtual= param.val.DownSampleIni;
-
-    % Chama a função para registrar as PCs:
-    [tform pcFull]= fRegistraPC(pc, pcDenoised, param);
-    
-    % Efetua a análise do desempenho do registro das PCs
-    [vetorTransLiDAR deslocamentoInterferometro erro]= fAnalisaDados(tform, medicoes, pcFull, param);
-    
-    
-    % chama a função para exibir os resulatdos da análise dos dados:
-    if (param.show.Data)
-        fExibeDados(vetorTransLiDAR, deslocamentoInterferometro, erro, pcFull, param);
-    end
-    num= 1;
-    t=table(num', param.val.DownSampleAtual', erro.XMedio', erro.DP', erro.Max', erro.Min');
-    t.Properties.VariableNames = {'num.','gridZise','erroMedio','DP','erroMax','erroMin'}
-    
-    % Salva a PCs registrada e concatenada:  
-    nameFile= sprintf('pcfull.%s', param.name.extPC);
-    fullPathFile = fullfile(param.path.Base, nameFile);
-    pcwrite(pcFull,fullPathFile);
 end
 
 % Efetua a segmentação das PCs para extrair ROI que é o plano de referencia
 if (param.hab.Segmenta)
-    fSegmentaPC(pc,param);
+   fSegmentaPC(param);
 end
 
 a=0;

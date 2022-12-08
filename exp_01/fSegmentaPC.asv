@@ -7,30 +7,32 @@
 function fSegmentaPC(param)
 close all;
 
-pathToRead= sprintf('%s%s',param.path.Base, param.path.PCReg); 
-pathToSave= sprintf('%s%s',param.path.Base, param.path.PCSeg);
+pathBase= param.path.Base;
+pathToRead= sprintf(param.path.PCReg); 
+pathToSave= param.path.PCSeg;
 
-% Se a pasta onde serão salvas as PCs segmentadas não existir ela será criada:
-if ~isfolder(pathToSave)
+% Se a pasta onde serão salvas as PCs segmentadas não existir ela será
+% criada:
+pathToSavePCSeg= sprintf('%s%s',param.path.Base, param.path.PCSeg);
+if ~isfolder(pathToSavePCSeg)
     mkdir(pathToSavePCSeg);
 end
 
-infoFolder= dir(fullfile(pathToRead, '*.pcd'));
-numPCs= length(infoFolder(not([infoFolder.isdir])));
+infoFOlder= dir(pathToRead);
 
-for (i=1:numPCs)
+
+for (i=1:param.stopPC)
     close all;
     % Especifica a nuvem de pontos de referênica a ser lida. Path completo.  
-    nameFile= sprintf('%0.4d.%s', i, param.name.extPC);
-    fullPath= fullfile(pathToRead, nameFile);
+    nameFile= sprintf('%0.4d.%s',i,param.ext.PC);
+    fullPath= fullfile(pathBase,pathToRead,nameFile);
     % Efetua a leitura da nuvem depontos de referência. 
     pc= pcread(fullPath);
     % Filtra o ruído da nuvem de pontos de referência.
     pcDenoised = pcdenoise(pc);
     
     % Segmenta a nuvem de pontos em clusters com a função pcsegdist(): 
-    [labels, numClusters] = pcsegdist(pcDenoised, param.val.minDistance,'NumClusterPoints',param.val.minPoints);
-    
+    [labels, numClusters] = pcsegdist(pcDenoised, param.minDistance,'NumClusterPoints',param.minPoints);
     % Remove os pontos que não tem valor de label válido, ou seja =0.
     idxValidPoints = find(labels);
     % Guarda o cluster definidos na variável "idxValidPoints" quem contém 
@@ -43,7 +45,7 @@ for (i=1:numPCs)
         pcCluster{ctCluster}= select(pcDenoised,labels==ctCluster);
     end    
     all =1; 
-    if (param.show.PCSegmented) 
+    if (param.show.ResultSegmented) 
         % Cria um novo mapa de cores para os clusters
         if (all==1 || i==5 || i==14)
             colormap(hsv(numClusters));
@@ -69,13 +71,13 @@ for (i=1:numPCs)
     
     % Seleciona nuvem de pontos de interesse para salvar
     if (i==2)
-        pcNum= 4;        
+        pcNum= 2;        
     else
-        pcNum= 4;
+        pcNum= 2;
     end
 
     if (pcNum<=numClusters)
-        fullPath= fullfile(pathToSave, nameFile);
+        fullPath= fullfile(pathBase, pathToSave, nameFile);
         pcwrite(pcCluster{pcNum},fullPath); 
     else
         fprintf('Erro!!! Pooint cloud nº: %d contém: %d clusters, não existe o cluster nº: %d. \n', i, numClusters, pcNum);
