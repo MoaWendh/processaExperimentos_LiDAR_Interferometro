@@ -19,16 +19,22 @@ close all
 % Principais parâmetros.
 % N é o número de posições onde o LiDAR gerou as nuvens de pontos.
 
-param.path.Base= 'D:\Moacir\ensaios\2022.11.25 - LiDAR Com Interferometro\experimento_01\pcd';
+param.path.Base= 'D:\Moacir\ensaios\2022.11.25 - LiDAR Com Interferometro\experimento_01';
+param.path.PC= '\pcd';
+param.path.PCReg= '\Reg'; % Folder onde serão salvas as PCs registradas
+param.path.PCSeg= '\Seg'; % Folder onde serão salvas as PCS segmentadas com o ROI referente ao plano.
 param.path.ValoresInterferometro= 'D:\Moacir\ensaios\2022.11.25 - LiDAR Com Interferometro\experimento_01\interferometro_exp_01.mat';
 
-% Captura o número de folder contendo as PCs
-infoFolder= dir(param.path.Base);
+% Captura o número de folder contendo as PCs:
+pathAux= sprintf('%s%s',param.path.Base,param.path.PC);
+infoFolder= dir(pathAux);
 param.val.numFolders= nnz([infoFolder.isdir]) - 2;
 
 % Parâmetros gerais:
-param.name.FileBase= '\2022_11_25_01_';
 param.name.FolderBase= '\2022_11_25_01_';
+param.name.FileBase  = '\2022_11_25_01_';
+param.name.FileTForm = 'tform';
+
 param.name.extPC= 'pcd';
 
 % Parametros que definem quantas PCs serão lidas por folder:
@@ -42,8 +48,10 @@ param.show.Data= 0;
 
 % Habiliota a variação do griSize para avaliar o efeto sobre o desempenho
 % do registro das PCs.
-param.hab.VariacaoGridSize= 1;
+param.hab.TesteRegistro= 1;
 param.hab.VariacaoMetricaRegistro= 0;
+param.hab.Registra= 1; % Se 1 Habilita o registro das PCs.
+param.hab.Segmenta= 1; % Se 1 Habilita a segmentação das PCs.
 
 % Parametros para definição do algoritmo usado para o registro das PCS
 param.algorithm.Reg= 'ICP';
@@ -91,17 +99,26 @@ switch (param.algorithm.SubSample)
         warning('Unexpected plot type. No plot created.');
 end
 
-% Carrega os resultados de medição do interferômetro:
+% Carrega os resultados de medição feitas diretamente no interferômetro:
 medicoes= load(param.path.ValoresInterferometro);
 
-% Faz a leitura de todas as nuvens de pontos no formato '.pcd'. chamando a 
-% função fCarregaPCs, qeu retorn a nuvemde pontos bruta e filtrada:
-msg = sprintf('Carregando nuvens de pontos...');
-disp(msg);
-[pc pcDenoised]= fCarregaPCs(param);
+% Se "param.hab.Registro" estiver habilitado será chamada a função fRegistraPC
+% para registrar as PCs do experimento. Esta função retorno a transformação 
+% de corpo rígido para cada PC gerada. Ela também salva todas as PCs registradas 
+% numa único folder, bem como uma nuvem de pontos concatenda, full.
+% Obs.: Esta função deve ser habilitada depois de todos os ensaios serem
+% efetuados e definido o melhor algoritmo e melhor parâmetro para o registro.
+if (param.hab.Registra)
+    % Carrega as PCs geradas no experimento:
+    [pc pcDenoised]= fCarregaPCs(param);
+    
+    param.val.DownSampleAtual= param.val.DownSampleIni;
 
-%%
-if (param.hab.VariacaoGridSize)
+    % Chama a função fRegistraPC para registrar as PCs do experimento.
+    [tform{i} pcFull{i}]= fRegistraPC(pc, pcDenoised, param);   
+end
+
+if (param.hab.TesteRegistro)
     % Nesta seção é avaliado o desempenho dos registros considerando a
     % variação do "gridSize" usado para subamostrar as PCs.
     fprintf(' Testando %d parâmetros para os algoritmos: \n',param.val.VariacaoGridSize);
@@ -163,6 +180,11 @@ else
     nameFile= sprintf('pcfull.%s', param.name.extPC);
     fullPathFile = fullfile(param.path.Base, nameFile);
     pcwrite(pcFull,fullPathFile);
+end
+
+% Efetua a segmentação das PCs para extrair ROI que é o plano de referencia
+if (param.hab.Segmenta)
+    fSegmentaPC(pc,param);
 end
 
 a=0;
