@@ -24,6 +24,7 @@ param.path.PC= '\pcd';
 param.path.PCReg= '\Reg'; % Folder onde serão salvas as PCs registradas
 param.path.PCSeg= '\Seg'; % Folder onde serão salvas as PCS segmentadas com o ROI referente ao plano.
 param.path.PCPlaneAdjuste= '\Pln'; % Folder onde serão salvas as PCS segmentadas com o ROI referente ao plano.
+param.path.PCCanais= '\Reg\cn'; % Folder onde serão salvas as PCS segmentadas com o ROI referente ao plano.
 
 % Captura o número de folder contendo as PCs:
 pathAux= sprintf('%s%s',param.path.Base,param.path.PC);
@@ -124,7 +125,7 @@ if (param.hab.Registra)
     [pc pcDenoised]= fCarregaPCs(param);
     
     param.val.DownSampleAtual= param.val.DownSampleIni;
-    %%
+    
     % Chama a função fRegistraPC para registrar as PCs do experimento.
     [tform pcFull]= fRegistraPC(pc, pcDenoised, param);   
 end
@@ -136,6 +137,10 @@ if (param.hab.TesteRegistro)
     fprintf(' - Registro: %s \n', param.algorithm.Reg)
     fprintf(' - Subamostrage: %s\n',param.algorithm.SubSample);
     fprintf('Val. parâm. sub-amostragem: \n ');
+    
+    % Carrega as PCs geradas no experimento:
+    [pc pcDenoised]= fCarregaPCs(param);
+    
     for (i=1:param.val.VariacaoGridSize)
         switch (param.algorithm.SubSample)
             case 'Random'
@@ -167,7 +172,7 @@ if (param.hab.TesteRegistro)
     end
     % Montam tabela com os resultados:
     t=table(num',param.val.DownSample',erroXMedio', DP', erroMax',erroMin');
-    t.Properties.VariableNames = {'num.','gridZise','erroMedio','DP','erroMax','erroMin'}
+    t.Properties.VariableNames = {'num.', 'gridZise', 'erroMedio', 'DP', 'erroMax', 'erroMin'}
 end
 
 % Efetua a segmentação das PCs para extrair ROI que é o plano de referencia

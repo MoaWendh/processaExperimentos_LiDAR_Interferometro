@@ -24,6 +24,7 @@ param.path.PC= '\pcd';
 param.path.PCReg= '\Reg'; % Folder onde serão salvas as PCs registradas
 param.path.PCSeg= '\Seg'; % Folder onde serão salvas as PCS segmentadas com o ROI referente ao plano.
 param.path.PCPlaneAdjuste= '\Pln'; % Folder onde serão salvas as PCS segmentadas com o ROI referente ao plano.
+param.path.PCCanais= '\Reg\cn'; % Folder onde serão salvas as PCS segmentadas com o ROI referente ao plano.
 
 % Captura o número de folder contendo as PCs:
 pathAux= sprintf('%s%s',param.path.Base,param.path.PC);
@@ -50,18 +51,17 @@ param.val.minPoints= 800;
 %Parâmetros para ajustar plano:
 param.val.maxDistance= 0.02;
 
-% Parâmetros comn flags para habilitação de algoritmos exibição de dados:
+% Parâmetros com flags para habilitar a exibição de dados:
 param.show.PC= 0;
 param.show.PCReg= 0;
 param.show.Data= 0;
 param.show.PCSegmented= 1;
 
-% Habiliota a variação do griSize para avaliar o efeto sobre o desempenho
-% do registro das PCs.
-param.hab.TesteRegistro= 0;
-param.hab.Registra= 1; % Se 1 Habilita o registro das PCs.
-param.hab.Segmenta= 0; % Se 1 Habilita a segmentação das PCs.
-param.hab.AjustaPlano= 0; % Se 1 Habilita a segmentação das PCs.
+% Flags que habilitam algumas funções: 
+param.hab.TesteRegistro= 1; % Habilita a variação dos parâmetros para teste de registro.
+param.hab.Registra     = 0; % Se 1 Habilita o registro das PCs.
+param.hab.Segmenta     = 0; % Se 1 Habilita a segmentação das PCs.
+param.hab.AjustaPlano  = 0; % Se 1 Habilita a segmentação das PCs.
 param.hab.VariacaoMetricaRegistro= 0;
 
 % Parametros para definição do algoritmo usado para o registro das PCS
@@ -125,9 +125,9 @@ if (param.hab.Registra)
     [pc pcDenoised]= fCarregaPCs(param);
     
     param.val.DownSampleAtual= param.val.DownSampleIni;
-
+   
     % Chama a função fRegistraPC para registrar as PCs do experimento.
-    [tform{i} pcFull{i}]= fRegistraPC(pc, pcDenoised, param);   
+    %[tform pcFull]= fRegistraPC(pc, pcDenoised, param);   
 end
 
 if (param.hab.TesteRegistro)

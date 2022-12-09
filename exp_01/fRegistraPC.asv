@@ -124,13 +124,17 @@ for (ctPC=2:length(pc))
        zlabel('Z (m)');
        handle.WindowState='maximized';
    end 
+   fprintf('Pc=');
 end
 
+fprintf('\n Salvando as PCs totalmente concatenadas no arquivo "pcFull.pcd"...');
 % Salva todas as PCs concatenadas num único arquivoa:
 nameFile= sprintf('pcFull.pcd');
-fprintf('\n Salvando as PCs concatenadas no arquivo: %s ...', nameFile);
 fullPath= fullfile(pathToSavePCReg, nameFile);
 pcwrite(pcFull, fullPath);
+
+fprintf(' cn=  %d',ctPC);
+
 end
 
 
