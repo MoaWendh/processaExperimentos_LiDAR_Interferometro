@@ -2,24 +2,155 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Autor: Moacir Wendhausen
 % Data: 08/08/2022
-% Utilização da função "pcsegdist()" para segmentar uma nuvem de pontos.
+% Código usado para ajustar um plano a nuvem dep ontos gerada pelo LiDRA
+% e também calcular a distãncia de cada pónto desta nuvem ao plano teórico 
+% ajustado, desta forma é possível calcular o erro de planeza da nuvem de 
+% pontos obtida com o Velodyne Puck Lite.
+% Experimento executado com o LiDRA e o laser interferométrico no
+% laboratório do CERTI.
+% Neste código são usados conceitos de Geometria Analítica, extraidos do
+% livro "Geometria Analítica", Autor: Alfredo Steinbruch & Paulo Winterle.
+% Data do experimento: 25/11/2022
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function fAjustaPlanoPC()
 clc;
 close all;
+clear;
 
-param.val.maxDistance= ;
-pathToRead= sprintf('D:\Moacir\ensaios\2022.11.25 - LiDAR Com Interferometro\experimento_01\Pln\0001.pcd');
+% Flag simulaPlano usado para verificar se as equações do plano e
+% princípios teóricos estão ok. Se este flag estiver desativado, será
+% efetuada a análise das nuvend de pontos geradas pelo LiDAR.
+simulaPlano= 0;
 
-pc= pcread(pathToRead);
-% Filtra o ruído da nuvem de pontos de referência.
-pcDenoised = pcdenoise(pc);   
+if (~simulaPlano)
+    param.val.maxDistance= 0.01;
+    % Carrega nuvem de pontos gerada pelo LiDAR:
+    pathToRead='D:\Moacir\ensaios\2022.11.25 - LiDAR Com Interferometro\experimento_01\Pln\0001.pcd';
+    pc= pcread(pathToRead);
+    % Filtra o ruído da nuvem de pontos de referência.
+    pcDenoised = pcdenoise(pc);   
+    
+    % Ajusta um plano entre a nuvem de pontos:
+    [plane, inlierIndices, outlierIndices, error]= pcfitplane(pc, param.val.maxDistance);
+    pcPlane= select(pc, inlierIndices);
+    remainPtCloud= select(pc, outlierIndices);
 
-[model, inlierIndices, outlierIndices, error]= pcfitplane(pc, param.val.maxDistance);
-pcPlane= select(pc, inlierIndices);
-remainPtCloud= select(pc,outlierIndices);
+    % Chama a função para determinar a distância de cada ponto da PC ao
+    % plano ajustado, determinando o erro de planeza da PC gerada pelo LiDAR
+    % Esta função retorna:
+    % - P= Ponto onde a reta "r" que conecta um ponto da PC ao plano ajustado.
+    % - vet= vetor normal ao plano colinear a reta "r".
+    % - d= norma do vetor "vet", ou seja, distânica absoluta.
+    % - dp= desvio padrão de todas as disTañcia entre cada ponto da PC e o plano.
+    [P vet range M dp]= fCalculaDistanciaPontoPlano(plane, pcPlane);
 
-fullPath= fullfile(pathToSave, nameFile);
-pcwrite(pcPlane,fullPath);
+    % Exibe os resultados:
+    figure(1);
+    subplot(2,2,1);
+    pcshow(pc);
+    subplot(2,2,2);
+    pcshow(pcPlane);
+    subplot(2,2,[3 4]);
+    pcshow(pc);
+    hold on;
+    plot(plane,'Color',[0 1 0]);
 
+    figure(2);
+    pcshow(pcPlane, 'MarkerSize', 18);
+    hold on;
+    title('PCs ');
+    xlabel('X (m)');
+    ylabel('Y (m)');
+    zlabel('Z (m)');
+    handle.WindowState='maximized';
+    
+    % Plota o plano
+    plot(plane,'Color',[0 1 0]);
+    
+    % Plotta os pontos da reta que interceptam o plano
+    plot3(P(:,1),P(:,2),P(:,3),'*b');
+    
+    % Exibe os vetores colineares a reta e normais ao plano.
+    quiver3(P(:,1),P(:,2),P(:,3),vet(:,1), vet(:,2),vet(:,3),'off','r');
+    
+    % Plota o histograma com o erro médio e desvio padrão 
+    figure;
+    histogram(range,25);
+else
+    % Simula um plano onde o vetor normal "n" é dado pelas coordenadas
+    % (a,b,c). O ponto "A" pertencente ao palno també pe dado por (xA,Ya,Za),
+    % possibilitando calcular o parâmetro "d".
+    % Definição dos coeficientes do vetor normal ao plano, n:
+    a= 1;
+    b= 1;
+    c= 0;
+    n= [a b c];
+    
+    % Definição das coordenadas do ponto "A" pertencete ao plano
+    xA= 5;
+    yA= 5;
+    zA= 5;   
+    A= [xA yA zA];
+    
+    % Equação do plano -> a*x + b*y + c*z + d= 0" ou -> dot(A,n) + d= 0.
+    % Logo, d= -(a*x + b*y + c*z):
+    d= -dot(A,n);
+    
+    % Equação paramétrica do plano do plano:
+    paramEq= [a b c d];
+    
+    % Define um modelo de plano conforme o Matlab:
+    plane= planeModel(paramEq);
+        
+    % Gera uma PC para testar o princípio.
+    % Gera pontos com as cordenadas X, Y e Z com a função randi do Matlab:
+    numPoints=1000;
+    iniRand= 0;  
+    fimRand= 10;
+    pcXBefore= randi([iniRand fimRand], 1, numPoints);
+    pcYBefore= randi([iniRand fimRand], 1, numPoints);
+    pcZBefore= randi([iniRand fimRand], 1, numPoints);
+    
+    pcXAfter= randi([iniRand fimRand], 1, numPoints); 
+    pcYAfter= randi([iniRand fimRand], 1, numPoints); 
+    pcZAfter= randi([iniRand fimRand], 1, numPoints);
+    
+    pcX=[pcXBefore, pcXAfter]; 
+    pcY=[pcYBefore, pcYAfter];
+    pcZ=[pcZBefore, pcZAfter];
+    
+    % Concatena as coordenadas numa única nuvem de pontos: 
+    pc(:,1)= pcX';
+    pc(:,2)= pcY';
+    pc(:,3)= pcZ';
+    
+    % Coverte a nuvem de pontos com a função pointCloud() do Matlab:
+    pc= pointCloud(pc);
+    
+    % Chama a função para calular a distância dos pontos da PC ao plano simulado:
+    [P vet range M dp]= fCalculaDistanciaPontoPlano(plane, pc);
+    
+    % Exibe os resultados:
+    % Plota a PC
+    handle= figure;
+    pcshow(pc, 'MarkerSize', 100);
+    hold on;
+    title('PCs ');
+    xlabel('X (m)');
+    ylabel('Y (m)');
+    zlabel('Z (m)');
+    handle.WindowState='maximized';
+    
+    % Plota o plano
+    plot(plane,'Color',[0 1 0]);
+    % Plotta os pontos da reta que interceptam o plano
+    plot3(P(:,1),P(:,2),P(:,3),'*b');
+    % Plota os vetores colineares a reta
+    quiver3(P(:,1),P(:,2),P(:,3),vet(:,1), vet(:,2),vet(:,3),'off','r');
+    
+    % Plota o histograma com o erro médio e desvio padrão 
+    figure;
+    histogram(range,26);
+    title
+end
 end
