@@ -20,11 +20,12 @@ close all
 param.path.Base= 'D:\Moacir\ensaios\2022.11.25 - LiDAR Com Interferometro\experimento_01';
 % O único path que precisa ser definido é o param.path.Base, os outros são
 % criados ao longo do código.
-param.path.PC= '\pcd';
+param.path.PC= '\original';
 param.path.PCReg= '\Reg'; % Folder onde serão salvas as PCs registradas
 param.path.PCSeg= '\Seg'; % Folder onde serão salvas as PCS segmentadas com o ROI referente ao plano.
 param.path.PCPlaneAdjuste= '\Pln'; % Folder onde serão salvas as PCS segmentadas com o ROI referente ao plano.
 param.path.PCCanais= '\Reg\cn'; % Folder onde serão salvas as PCS segmentadas com o ROI referente ao plano.
+param.path.PCFull= '\Reg\full'; % Folder onde serão salvas as PCs full, ou seja, concatenadas após o resgistro.
 
 % Captura o número de folder contendo as PCs:
 pathAux= sprintf('%s%s',param.path.Base,param.path.PC);
@@ -59,8 +60,8 @@ param.show.PCSegmented= 1;
 
 % Flags que habilitam algumas funções: 
 param.hab.TesteRegistro= 0; % Habilita a variação dos parâmetros para teste de registro.
-param.hab.Registra     = 1; % Se 1 Habilita o registro das PCs.
-param.hab.Segmenta     = 0; % Se 1 Habilita a segmentação das PCs.
+param.hab.Registra     = 0; % Se 1 Habilita o registro das PCs.
+param.hab.Segmenta     = 1; % Se 1 Habilita a segmentação das PCs.
 param.hab.AjustaPlano  = 0; % Se 1 Habilita a segmentação das PCs.
 param.hab.VariacaoMetricaRegistro= 0;
 

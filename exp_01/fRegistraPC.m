@@ -40,6 +40,13 @@ if ~isfolder(pathToSavePCReg)
     mkdir(pathToSavePCReg);
 end
 
+% Path onde são salvas as PCs totalmente concatenadas, ous seja, a pcFull
+% constituida das n PCs.
+pathToSavePCRegFull= sprintf('%s%s',param.path.Base, param.path.PCRegFull);
+if ~isfolder(pathToSavePCRegFull)
+    mkdir(pathToSavePCRegFull);
+end
+
 % Salva a primeira PC que será a referência:
 nameFile= sprintf('%0.4d.%s',1, param.name.extPC);
 fullPath= fullfile(pathToSavePCReg, nameFile);
@@ -129,7 +136,7 @@ end
 % Salva todas as PCs concatenadas num único arquivoa:
 nameFile= sprintf('pcFull.pcd');
 fprintf('\n Salvando as PCs concatenadas no arquivo: %s ...', nameFile);
-fullPath= fullfile(pathToSavePCReg, nameFile);
+fullPath= fullfile(pathToSavePCRegFull, nameFile);
 pcwrite(pcFull, fullPath);
 end
 
