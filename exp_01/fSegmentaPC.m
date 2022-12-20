@@ -20,10 +20,12 @@ end
 infoFolder= dir(fullfile(pathToRead, '*.pcd'));
 numPCs= length(infoFolder(not([infoFolder.isdir])));
 
-for (i=1:numPCs)
+for (ctPC=1:numPCs)
     close all;
+    clc;
+
     % Especifica a nuvem de pontos de referênica a ser lida. Path completo.  
-    nameFile= sprintf('%0.4d.%s', i, param.name.extPC);
+    nameFile= sprintf('%0.4d.%s', ctPC, param.name.extPC);
     fullPath= fullfile(pathToRead, nameFile);
     % Efetua a leitura da nuvem depontos de referência. 
     pc= pcread(fullPath);
@@ -43,15 +45,16 @@ for (i=1:numPCs)
     for (ctCluster=1:numClusters)
         %Gera uma nuvem de pontos para cada cluster:
         pcCluster{ctCluster}= select(pcDenoised,labels==ctCluster);
-    end    
+    end
+    fprintf(' PC lida= %d contém -> %d clusters.\n', ctPC, numClusters);
     all =1; 
-    if (param.show.PCSegmented) 
+    if (param.show.PCSegmented && (numClusters>0)) 
         % Cria um novo mapa de cores para os clusters
-        if (all==1 || i==5 || i==14)
+        if (all==1 || ctPC==5 || ctPC==14)
             colormap(hsv(numClusters));
             % Exibe a nuvem de pontos segmentada inteira:
             pcshow(pcSegmented.Location,labelColorIndex);
-            title('Full Segmented Point Cloud Clusters ');
+            title(' Full Segmented Point Cloud Clusters ');
             xlabel('X (m)');
             ylabel('Y (m)');
             zlabel('Z (m)');
@@ -59,7 +62,7 @@ for (i=1:numPCs)
                 figure;
                 % Exibe o cluster da nuvem de pontos segemntada:
                 pcshow(pcCluster{ctCluster}.Location);
-                titulo= sprintf('Segmented Point Cloud Clusters= %d ',ctCluster);
+                titulo= sprintf(' Segmented Point Cloud Clusters= %d ',ctCluster);
                 title(titulo);
                 xlabel('X (m)');
                 ylabel('Y (m)');
@@ -70,18 +73,25 @@ for (i=1:numPCs)
     end  
     
     % Seleciona nuvem de pontos de interesse para salvar
-    if (i==2)
-        pcNum= 4;        
+    if (ctPC==2)
+        pcNum= 2;        
     else
-        pcNum= 4;
+        pcNum= 2;
     end
-
-    if (pcNum<=numClusters)
-        fullPath= fullfile(pathToSave, nameFile);
-        pcwrite(pcCluster{pcNum},fullPath); 
+    
+    % Salva a PC segmentada:
+    if (numClusters>0)
+        if (pcNum<=numClusters)
+            fullPath= fullfile(pathToSave, nameFile);
+            pcwrite(pcCluster{pcNum},fullPath); 
+        else
+            fprintf(' Erro!!! Pooint cloud nº: %d contém: %d clusters, não existe o cluster nº: %d. \n', ctPC, numClusters, pcNum);
+            msg=' Digite qualquer tecla para continuar:';
+            key= input(msg, 's');
+        end
     else
-        fprintf('Erro!!! Pooint cloud nº: %d contém: %d clusters, não existe o cluster nº: %d. \n', i, numClusters, pcNum);
-        msg='Digite qualquer tecla para continuar:';
+        fprintf(' Atenção!!! Para PC %d foram detectados %d clusters!\n', ctPC, numClusters);
+        msg=' Digite qualquer tecla para continuar:';
         key= input(msg, 's');
     end    
 end

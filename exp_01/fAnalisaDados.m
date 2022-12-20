@@ -8,7 +8,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [vetorTransLiDAR deslocamentoInterferometro erro]= fAnalisaDados(tform, medicoes, pcFull, param)
 
-
 for (ct=1:(param.val.numFolders-1))
     % Converte os valores em mm:
     vetorTransLiDAR(ct,:)= tform{ct}.Translation*1000;

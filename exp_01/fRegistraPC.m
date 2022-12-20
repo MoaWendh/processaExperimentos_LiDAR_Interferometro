@@ -40,9 +40,9 @@ if ~isfolder(pathToSavePCReg)
     mkdir(pathToSavePCReg);
 end
 
-% Path onde são salvas as PCs totalmente concatenadas, ous seja, a pcFull
-% constituida das n PCs.
-pathToSavePCRegFull= sprintf('%s%s',param.path.Base, param.path.PCRegFull);
+% Path onde são salvas as PCs totalmente concatenadas, ou seja, a pcFull
+% constituida das N PCs.
+pathToSavePCRegFull= sprintf('%s%s',param.path.Base, param.path.PCFull);
 if ~isfolder(pathToSavePCRegFull)
     mkdir(pathToSavePCRegFull);
 end
