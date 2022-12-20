@@ -1,20 +1,18 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Moacir Wendhausen
 % 26/11/2022
-% Código usado para abrir, processar e registraa as nuven de pontos do experimento
-% feito no lab do CERTI.
+% Código usado para avaliar o desempenho dos algoritmos de registros  de 
+% nuvens de pontos do Matlab.
 % Data do experimento: 25/11/2022
 % Padrões: pirâmede com esfereas,simulacro riser PVC e plano. 
 % Instrumentos: LiDAR PuckLite + Interferômetro.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+function fAvaliaDesempenhoRegistro()
+
 clear;
 clc;
 close all
-
-%Passado pelo Vinicius
-%profile clear       % clean profile history
-%profile -memory on  % Bring memory info
 
 % Definição de alguns paths:
 param.path.Base= 'D:\Moacir\ensaios\2022.11.25 - LiDAR Com Interferometro\experimento_01';
@@ -27,7 +25,7 @@ param.path.PCPlaneAdjuste= '\Pln'; % Folder onde serão salvas as PCS segmentada
 param.path.PCCanais= '\Reg\cn'; % Folder onde serão salvas as PCS segmentadas com o ROI referente ao plano.
 param.path.PCFull= '\Reg\full'; % Folder onde serão salvas as PCs full, ou seja, concatenadas após o resgistro.
 
-% Captura o número de folder contendo as PCs:
+% Captura o número de folders contendo as PCs:
 pathAux= sprintf('%s%s',param.path.Base,param.path.PC);
 infoFolder= dir(pathAux);
 param.val.numFolders= nnz([infoFolder.isdir]) - 2;
@@ -45,24 +43,13 @@ param.name.extPC= 'pcd';
 param.val.fileIni= 3;
 param.val.fileEnd= 3;
 
-% Parâmetros para segemtação das PCs para definir o ROI do plano:
-param.val.minDistance= 0.05; 
-param.val.minPoints= 800;
-
-%Parâmetros para ajustar plano:
-param.val.maxDistance= 0.02;
-
 % Parâmetros com flags para habilitar a exibição de dados:
 param.show.PC= 0;
 param.show.PCReg= 0;
 param.show.Data= 1;
-param.show.PCSegmented= 0;
 
 % Flags que habilitam algumas funções: 
 param.hab.TesteRegistro= 1; % Habilita a variação dos parâmetros para teste de registro.
-param.hab.Registra     = 0; % Se 1 Habilita o registro das PCs.
-param.hab.Segmenta     = 0; % Se 1 Habilita a segmentação das PCs.
-param.hab.AjustaPlano  = 0; % Se 1 Habilita a segmentação das PCs.
 param.hab.VariacaoMetricaRegistro= 0;
 
 % Parametros para definição do algoritmo usado para o registro das PCS
@@ -115,22 +102,6 @@ end
 pathDataInterferomtero= sprintf('%s%s', param.path.Base, param.name.FileDataInterferometro);
 medicoes= load(pathDataInterferomtero);
 
-% Se "param.hab.Registro" estiver habilitado será chamada a função fRegistraPC
-% para registrar as PCs do experimento. Esta função retorno a transformação 
-% de corpo rígido para cada PC gerada. Ela também salva todas as PCs registradas 
-% numa único folder, bem como uma nuvem de pontos concatenda, full.
-% Obs.: Esta função deve ser habilitada depois de todos os ensaios serem
-% efetuados e definido o melhor algoritmo e melhor parâmetro para o registro.
-if (param.hab.Registra)
-    % Carrega as PCs geradas no experimento:
-    [pc pcDenoised]= fCarregaPCs(param);
-    
-    param.val.DownSampleAtual= param.val.DownSampleIni;
-    
-    % Chama a função fRegistraPC para registrar as PCs do experimento.
-    [tform pcFull]= fRegistraPC(pc, pcDenoised, param);   
-end
-
 if (param.hab.TesteRegistro)
     % Nesta seção é avaliado o desempenho dos registros considerando a
     % variação do "gridSize" usado para subamostrar as PCs.
@@ -139,9 +110,11 @@ if (param.hab.TesteRegistro)
     fprintf(' - Subamostrage: %s\n',param.algorithm.SubSample);
     fprintf('Val. parâm. sub-amostragem: \n ');
     
-    % Carrega as PCs geradas no experimento:
+    % Carrega as PCs originais geradas no experimento:
     [pc pcDenoised]= fCarregaPCs(param);
     
+    % Escolhe o parâmetros em função do algoritmo de sub amostragem
+    % selecionado anteriormente:
     for (i=1:param.val.VariacaoGridSize)
         switch (param.algorithm.SubSample)
             case 'Random'
@@ -174,15 +147,6 @@ if (param.hab.TesteRegistro)
     % Montam tabela com os resultados:
     t=table(num',param.val.DownSample',erroXMedio', DP', erroMax',erroMin');
     t.Properties.VariableNames = {'num.', 'gridZise', 'erroMedio', 'DP', 'erroMax', 'erroMin'}
-end
-
-% Efetua a segmentação das PCs para extrair ROI que é o plano de referencia
-if (param.hab.Segmenta)
-   fSegmentaPC(param);
-end
-
-if (param.hab.AjustaPlano)
-    fAjustaPlanoPC(param);
 end
 
 a=0;

@@ -8,6 +8,30 @@
 % Isto facilita a análise estatistica das medições do LiDAR por canal, ou seja,
 % cada canal pode ser avaliado separadamente.
 % Instrumentos: LiDAR PuckLite + Interferômetro.
+% ***Atenção*** 
+% O LiDAR VLP-16 ou Puck LITE retorna os pacotes de dados dados a informação 
+% dos 16 canais conforme a sequência que segue abaixo:
+%  Posição     Canal    Ângulo(Elevação)
+%    01         00          -15º
+%    02         02          -13º
+%    03         04          -11º
+%    04         06          -9º
+%    05         08          -7º
+%    06         10          -5º
+%    07         12          -3º
+%    08         14          -1º
+%    09         01           1º
+%    10         03           3º
+%    11         05           5º
+%    12         07           7º
+%    13         09           9º
+%    14         11           11º
+%    15         13           13º
+%    16         15           15º
+% Desta forma, o primeiro canal da nuvem de pontos corresponde ao canal 00,
+% o segundo canal ao 02, e assim sucessivamente, conforme o exposto acima.
+% Os dados são salvos na pasta sem considerar esta sequência, quando os
+% dados salvos por canal forme utilziados esta sequencia deverá ser considerada. 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function fMergePcPorCanal()
@@ -16,11 +40,21 @@ clc;
 close all;
 
 pathBase= 'D:\Moacir\ensaios\2022.11.25 - LiDAR Com Interferometro\experimento_01\Reg\';
-
 mergeSize= 0.001;
 showPC= 0;
 showPCFull= 1;
 numCanais= 16;
+
+% Gera uma struct contendo as informações de canal e ângulo:
+for (i=1:numCanais)
+    if (i<9)
+        canal.Num(i)= 2*(i-1);
+        canal.Ang(i)= -1*((numCanais-1) + 2*(1-i));
+    else
+        canal.Num(i)= (2*i - (numCanais+1));
+        canal.Ang(i)= (2*i - (numCanais+1));        
+    end
+end
 
 % Varre os folders para pegar as PCS por canal.
 for (ctCanal=1:numCanais)
@@ -75,7 +109,7 @@ for (ctCanal=1:numCanais)
    if (showPCFull)
        handle= figure;
        pcshow(pcFull);
-       msg= sprintf('Canal %d do LiDAR com %d PCs concatenadas.', ctCanal, ctPC);
+       msg= sprintf('Canal=%d Ang=%dº -> %d PCs concatenadas.', canal.Num(ctCanal), canal.Ang(ctCanal), ctPC);
        title(msg);
        xlabel('X (m)');
        ylabel('Y (m)');
