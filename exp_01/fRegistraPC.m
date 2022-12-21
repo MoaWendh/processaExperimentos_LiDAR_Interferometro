@@ -35,14 +35,14 @@ tformAccum= affine3d;
 
 % Verifica se folder onde serão salvas as PCs alinhadas existe, se não
 % existir o folder será gerado, conforme definido no param:
-pathToSavePCReg= sprintf('%s%s',param.path.Base, param.path.PCReg);
+pathToSavePCReg= sprintf('%s%s',param.path.BaseSave, param.path.PCReg);
 if ~isfolder(pathToSavePCReg)
     mkdir(pathToSavePCReg);
 end
 
 % Path onde são salvas as PCs totalmente concatenadas, ou seja, a pcFull
 % constituida das N PCs.
-pathToSavePCRegFull= sprintf('%s%s',param.path.Base, param.path.PCFull);
+pathToSavePCRegFull= sprintf('%s%s',param.path.BaseSave, param.path.PCFull);
 if ~isfolder(pathToSavePCRegFull)
     mkdir(pathToSavePCRegFull);
 end
