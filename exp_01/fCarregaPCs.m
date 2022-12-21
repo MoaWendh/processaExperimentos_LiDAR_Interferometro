@@ -6,11 +6,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [pc pcDenoised]= fCarregaPCs(param)
-close all
+
 fprintf(' Carregando PCs ');
 % Faz a leitura de todas as nuvens de pontos no formato '.pcd'.
 for (ctFolder=1:param.val.numFolders) 
-    path= sprintf('%s%s%s%0.4d\\', param.path.Base, param.path.PC, param.name.FolderBase, ctFolder*200);
+    path= sprintf('%s%s%0.4d\\', param.path.BaseRead, param.name.FolderBase, ctFolder*200);
     % Verifica os folders
     infoFolder= dir(fullfile(path, '*.pcd'));
     %¨numFiles= length(infoFolder(not([infoFolder.isdir])));

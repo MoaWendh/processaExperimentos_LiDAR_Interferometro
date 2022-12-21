@@ -7,7 +7,7 @@ function fSeparaCanais(pc, param, ctPC)
     for (cn=1:numCanais)
         % Verifica se os folders onde serão salvas as PCs por canal existem,
         % se não existir eles serão gerados, conforme definido no param:
-        pathToSavePCReg= sprintf('%s%s%0.2d',param.path.Base, param.path.PCCanais,cn);
+        pathToSavePCReg= sprintf('%s%s%0.2d',param.path.BaseSave, param.path.PCCanais,cn);
         if ~isfolder(pathToSavePCReg)
             mkdir(pathToSavePCReg);
         end
