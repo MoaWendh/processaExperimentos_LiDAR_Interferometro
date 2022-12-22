@@ -61,9 +61,10 @@ handles.path.BaseRead= 'D:\Moacir\ensaios\2022.11.25 - LiDAR Com Interferometro\
 handles.path.BaseSave= 'D:\Moacir\ensaios\2022.11.25 - LiDAR Com Interferometro\experimento_01';
 
 % Outros paths fixos, que são gerados automaticametne pelo programa:
-handles.path.PCReg= '\Reg'; % Folder onde serão salvas as PCs registradas
-handles.path.PCCanais= '\Reg\cn'; % Folder onde serão salvas as PCS segmentadas com o ROI referente ao plano.
-handles.path.PCFull= '\Reg\full'; % Folder onde serão salvas as PCs full, ou seja, concatenadas após o resgistro.
+handles.path.PCReg= '\out\pcReg'; % Folder onde serão salvas as PCs registradas
+handles.path.PCCanais= '\out\pcRegPorCanal\cn'; % Folder onde serão salvas as PCS segmentadas com o ROI referente ao plano.
+handles.path.PCFull= '\out\pcRegConcatenada'; % Folder onde serão salvas as PCs full, ou seja, concatenadas após o resgistro.
+handles.path.tform= '\out\tform'; % Folder onde serão salvas as PCs full, ou seja, concatenadas após o resgistro.
 
 % Captura o número de folders contendo as PCs corresponde ao nº de distãncias
 % medidas:

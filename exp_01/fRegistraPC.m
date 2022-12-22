@@ -47,6 +47,13 @@ if ~isfolder(pathToSavePCRegFull)
     mkdir(pathToSavePCRegFull);
 end
 
+% Path onde são salvas as transformações de coirpo rígodo 'tform' obtidas
+% pelos algoritmos de registro:
+pathToSaveTform= sprintf('%s%s',param.path.BaseSave, param.path.tform);
+if ~isfolder(pathToSaveTform)
+    mkdir(pathToSaveTform);
+end
+
 % Salva a primeira PC que será a referência:
 nameFile= sprintf('%0.4d.%s',1, param.name.extPC);
 fullPath= fullfile(pathToSavePCReg, nameFile);
@@ -98,7 +105,7 @@ for (ctPC=2:length(pc))
    
    % Salva a transformação de corpo rígido da PC atual:
    nameFile= sprintf('%s%0.4d',param.name.FileTForm, ctPC-1, '.mat');
-   fullPath= fullfile(pathToSavePCReg, nameFile);
+   fullPath= fullfile(pathToSaveTform, nameFile);
    R=tformAux.Rotation;
    t=tformAux.Translation;
    save(fullPath, 'R', 't');
