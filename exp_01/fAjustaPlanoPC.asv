@@ -50,10 +50,10 @@ if (~handles.enableSimulation)
         % - vet= vetor normal ao plano colinear a reta "r".
         % - d= norma do vetor "vet", ou seja, distânica absoluta.
         % - dp= desvio padrão de todas as disTañcia entre cada ponto da PC e o plano.
-        [pontoNoPlano vetorN rangePontoPlano media dp]= fCalculaDistanciaPontoPlano(plane, pc); %pcPlane);
+        [pontoNoPlano vetorN rangePontoPlano Media dp]= fCalculaDistanciaPontoPlano(plane, pc); %pcPlane);
 
         % Cahama função para exibir os rsultados:
-        fShowAnaliseAjustePlano(pc, pcPlane, plane, pontoNoPlano, vetorN, rangePontoPlano, media, dp);
+        fShowAnaliseAjustePlano(pc, pcPlane, plane, P, vet, range, M, dp);
     else
         msg= sprintf('Erro!!!Numero de canais da PC imcompatível!! Escolha outra PC.');
         msgbox(msg);

@@ -1,7 +1,8 @@
 function fShowPcFiltradaPorDistancia(pcOriginal, pcThreshold, handles)
     
 % Cria um novo mapa de cores para os clusters
-figure;
+fig= figure;
+
 % Exibe a nuvem de pontos segmentada inteira:
 subplot(1,2,1);
 pcshow(pcOriginal.Location);
@@ -20,5 +21,6 @@ title(msg);
 xlabel('X (m)');
 ylabel('Y (m)');
 zlabel('Z (m)');
+fig.Position= [10, 40, 1600, 950];
 
 end

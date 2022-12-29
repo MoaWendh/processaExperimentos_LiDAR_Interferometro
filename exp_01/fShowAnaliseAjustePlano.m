@@ -1,4 +1,4 @@
-function fShowAnaliseAjustePlano(pc, pcPlane, plane, P, vet, M, dp)
+function fShowAnaliseAjustePlano(pc, pcPlane, plane, P, vet, range, M, dp)
 
 % Exibe os resultados:
 figure(1);
@@ -32,7 +32,7 @@ quiver3(P(:,1),P(:,2),P(:,3),vet(:,1), vet(:,2),vet(:,3),'off','r');
 % Plota o histograma com o erro médio e desvio padrão 
 figure;
 h= histogram(range,25);
-msg= sprintf('Histograma distancia pontos PC-plano. Média= %0.4fm  DP= %0.4fm', M,dp);
+msg= sprintf('Histograma distância pontos PC-plano. Média= %0.4fm  DP= %0.4fm', M,dp);
 title(msg);
 
 end
