@@ -1,14 +1,14 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Moacir Wendhausen
 % 26/11/2022
-% Código para efetuar a análise dos rsultados dos registros da PCs referente
+% Código para efetuar a análise dos resultados dos registros da PCs referente
 % ao experimento 01 do LiDAR com Interferômetro.
 % Data do experimento: 25/11/2022
 % Instrumentos: LiDAR PuckLite + Interferômetro.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [vetorTransLiDAR deslocamentoInterferometro erro]= fAnalisaDados(tform, medicoes, pcFull, param)
+function [vetorTransLiDAR deslocamentoInterferometro erro]= fAnalisaDados(tform, medicoes, pcFull, handles)
 
-for (ct=1:(param.val.numFolders-1))
+for (ct=1:(handles.val.numFolders-1))
     % Converte os valores em mm:
     vetorTransLiDAR(ct,:)= tform{ct}.Translation*1000;
     

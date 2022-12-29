@@ -22,7 +22,7 @@ function varargout = ajustaPlano_GUI(varargin)
 
 % Edit the above text to modify the response to help ajustaPlano_GUI
 
-% Last Modified by GUIDE v2.5 22-Dec-2022 15:40:30
+% Last Modified by GUIDE v2.5 26-Dec-2022 10:45:36
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -53,9 +53,9 @@ function ajustaPlano_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % varargin   command line arguments to ajustaPlano_GUI (see VARARGIN)
 
 % Variável que guarda o endereço da nuvem de pontos a ser ajustada
-handles.pcFile= "";
-handles.pcPath= "";
-handles.pathFull= "";
+handles.file= ""; % handles.staticBrowseFile.String;
+handles.path= "";
+handles.pathPC= "";
 
 handles.maxDistance= str2num(handles.txtMaxDistance.String);
 handles.vetorNormal= str2num(handles.txtVetorNormal.String);
@@ -91,9 +91,9 @@ function btPathPC_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Faz a leitura da nuvem de pontos para ajuste de plano:
-[handles.pcFile, handles.pcPath] = uigetfile('D:\Moacir\ensaios\*.pcd',...
-                                             'Selecione a nuvem de pontos');
-handles.pathFull= fullfile(handles.pcPath,handles.pcFile);
+[handles.file, handles.path] = uigetfile(handles.staticBrowseFile.String);
+handles.pathPC= fullfile(handles.path,handles.file);
+handles.staticBrowseFile.String= handles.pathPC;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -121,7 +121,7 @@ if (handles.ckHabilitaSimulacao.Value>0)
     fAjustaPlanoPC(handles); 
 else
     handles.enableSimulation= 0;
-    if (handles.pcFile== "")
+    if (handles.pathPC== "")
         msg=sprintf('Defina uma nuvem de pontos .pcd antes de executar!');
         msgbox(msg);
     else   
@@ -253,3 +253,18 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 set(hObject,'String', '1000');
+
+
+% --- Executes during object creation, after setting all properties.
+function btPathPC_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to btPathPC (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes during object creation, after setting all properties.
+function staticBrowseFile_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to staticBrowseFile (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+set(hObject, 'String', 'C:\Projetos\Matlab\Experimentos\2022.11.25 - LiDAR Com Interferometro\experimento_01\out\*.pcd');
