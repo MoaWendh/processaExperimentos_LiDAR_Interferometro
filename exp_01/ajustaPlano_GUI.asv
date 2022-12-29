@@ -22,7 +22,7 @@ function varargout = ajustaPlano_GUI(varargin)
 
 % Edit the above text to modify the response to help ajustaPlano_GUI
 
-% Last Modified by GUIDE v2.5 29-Dec-2022 17:46:03
+% Last Modified by GUIDE v2.5 26-Dec-2022 10:45:36
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -84,9 +84,9 @@ function varargout = ajustaPlano_GUI_OutputFcn(hObject, eventdata, handles)
 varargout{1} = handles.output;
 
 
-% --- Executes on button press in btPathReadPC.
-function btPathReadPC_Callback(hObject, eventdata, handles)
-% hObject    handle to btPathReadPC (see GCBO)
+% --- Executes on button press in btPathPC.
+function btPathPC_Callback(hObject, eventdata, handles)
+% hObject    handle to btPathPC (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
@@ -95,9 +95,8 @@ function btPathReadPC_Callback(hObject, eventdata, handles)
 handles.pathPC= fullfile(handles.path,handles.file);
 handles.staticBrowseFile.String= handles.pathPC;
 % Habilita o gráfico axes1 para exibir a PC:
-figA= figure;
+axes(handles.axes1);
 pcshow(handles.pathPC);
-figA.Position= [1350, 100, 1000, 850];
 
 % Update handles structure
 guidata(hObject, handles);
@@ -113,9 +112,9 @@ clc;
 close all;
 
 
-% --- Executes on button press in pbExecAjustaPlano.
-function pbExecAjustaPlano_Callback(hObject, eventdata, handles)
-% hObject    handle to pbExecAjustaPlano (see GCBO)
+% --- Executes on button press in pbExecuta.
+function pbExecuta_Callback(hObject, eventdata, handles)
+% hObject    handle to pbExecuta (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
@@ -260,8 +259,8 @@ set(hObject,'String', '1000');
 
 
 % --- Executes during object creation, after setting all properties.
-function btPathReadPC_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to btPathReadPC (see GCBO)
+function btPathPC_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to btPathPC (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -272,18 +271,3 @@ function staticBrowseFile_CreateFcn(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 set(hObject, 'String', 'C:\Projetos\Matlab\Experimentos\2022.11.25 - LiDAR Com Interferometro\experimento_01\out\*.pcd');
-
-
-% --- Executes on button press in pbPathSave.
-function pbPathSave_Callback(hObject, eventdata, handles)
-% hObject    handle to pbPathSave (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-% --------------------------------------------------------------------
-function Untitled_1_Callback(hObject, eventdata, handles)
-% hObject    handle to Untitled_1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
