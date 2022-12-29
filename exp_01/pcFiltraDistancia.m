@@ -19,5 +19,8 @@ for (i=1:length(pc.Location))
         intensity(ct,:)= pc.Intensity(i,:);
     end    
 end
-pcThreshold= pointCloud(location, 'Intensity', intensity);
+pcThresholded= pointCloud(location, 'Intensity', intensity);
+
+fShowPcFiltradaPorDistancia(pc, pcThresholded, handles);
+
 end

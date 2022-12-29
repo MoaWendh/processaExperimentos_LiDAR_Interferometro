@@ -22,7 +22,7 @@ function varargout = segmenta_GUI(varargin)
 
 % Edit the above text to modify the response to help segmenta_GUI
 
-% Last Modified by GUIDE v2.5 29-Dec-2022 00:28:47
+% Last Modified by GUIDE v2.5 29-Dec-2022 10:52:29
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -71,13 +71,12 @@ handles.valMaxPoints= str2double(handles.txtNumMaxPontosPorCluster.String); %150
 % um ROI, esses parâmetros são usados na função segmentaLidarData().
 handles.valThresholdMaxDistance= str2double(handles.txtThresholdMaxDistance.String);
 handles.valThresholdMinDistance= str2double(handles.txtThresholdMinDistance.String);
-handles.valMaxAngle= str2double(handles.txtMaxAngle.String);
 
 
 %Se "handles.habFunction_SegmentaLidarData" estiver el nivel alto será habilitada
 % a função "segmentaLidarData()", caso contrário serpa usada a função
 % "pcsegdist".
-handles.habFunction_SegmentaLidarData= handles.checkSelectFunction.Value;
+handles.habSegmentaPorThreshold= handles.checkSelectSegByThreshold.Value;
 handles.habSavePcSeg= 0;
 
 handles.extPC= "pcd";
@@ -221,6 +220,7 @@ function txtNumMinPontosPorCluster_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+set(hObject, 'Enable', 'off');
 
 
 function txtMinDistance_Callback(hObject, eventdata, handles)
@@ -247,7 +247,7 @@ function txtMinDistance_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-set(hObject, 'Enable', 'on');
+set(hObject, 'Enable', 'off');
 
 
 % --- Executes on button press in checkShowPCs.
@@ -267,19 +267,27 @@ function checkShowPCs_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 
-% --- Executes on button press in checkSelectFunction.
-function checkSelectFunction_Callback(hObject, eventdata, handles)
-% hObject    handle to checkSelectFunction (see GCBO)
+% --- Executes on button press in checkSelectSegByThreshold.
+function checkSelectSegByThreshold_Callback(hObject, eventdata, handles)
+% hObject    handle to checkSelectSegByThreshold (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of checkSelectFunction
+% Hint: get(hObject,'Value') returns toggle state of checkSelectSegByThreshold
 if (hObject.Value== 1)
-    handles.txtMaxAngle.Enable= 'on';
-    handles.habFunction_SegmentaLidarData= 1;
+    handles.txtMinDistance.Enable= 'off';
+    handles.txtNumMinPontosPorCluster.Enable= 'off';
+    handles.txtNumMaxPontosPorCluster.Enable= 'off';
+    handles.txtThresholdMinDistance.Enable= 'on';
+    handles.txtThresholdMaxDistance.Enable= 'on';
+    handles.habSegmentaPorThreshold= 1; 
 else
-    handles.txtMaxAngle.Enable= 'off';
-    handles.habFunction_SegmentaLidarData= 0;
+    handles.txtMinDistance.Enable= 'on';
+    handles.txtNumMinPontosPorCluster.Enable= 'on';
+    handles.txtNumMaxPontosPorCluster.Enable= 'on';
+    handles.txtThresholdMinDistance.Enable= 'off';
+    handles.txtThresholdMaxDistance.Enable= 'off';
+    handles.habSegmentaPorThreshold= 0;
 end
 
 
@@ -407,42 +415,15 @@ function txtNumMaxPontosPorCluster_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function txtMaxAngle_Callback(hObject, eventdata, handles)
-% hObject    handle to txtMaxAngle (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of txtMaxAngle as text
-%        str2double(get(hObject,'String')) returns contents of txtMaxAngle as a double
-str= get(hObject, 'String');
-handles.valMaxAngle= str2double(str);
-% Update handles structure
-guidata(hObject, handles);
+set(hObject, 'Enable', 'off');
 
 
 % --- Executes during object creation, after setting all properties.
-function txtMaxAngle_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to txtMaxAngle (see GCBO)
+function checkSelectSegByThreshold_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to checkSelectSegByThreshold (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-set(hObject, 'Enable', 'off'); 
-
-
-% --- Executes during object creation, after setting all properties.
-function checkSelectFunction_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to checkSelectFunction (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-set(hObject, 'Value', 0); 
+set(hObject, 'Value', 1); 
 
 
 % --- Executes when figure1 is resized.

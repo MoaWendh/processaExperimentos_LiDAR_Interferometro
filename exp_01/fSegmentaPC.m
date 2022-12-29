@@ -14,55 +14,75 @@ pc= pcread(handles.PcToRead);
 % Filtra o ruído da nuvem de pontos de referência.
 pcDenoised= pcdenoise(pc);
 
-pcThresholded= pcFiltraDistancia(pcDenoised, handles);
-
-% Segmenta a nuvem de pontos em clusters com a função pcsegdist(): 
-if (handles.habFunction_SegmentaLidarData)
-    [labels, numClusters] = segmentLidarData(pc, handles.valMinDistance, [handles.valMimPoints handles.valMaxPoints]);
-    % Remove os pontos que não tem valor de label válido, ou seja =0.
-    idxValidPoints = find(labels);
-
-    % Guarda o cluster definidos na variável "idxValidPoints" quem contém 
-    % os endereços com os pontos válidos:
-    labelColorIndex = labels(idxValidPoints);
-
-    % Gera um nuvem de pontos com os valores segmentados:
-    pcSegmented = select(pc,idxValidPoints);
-else
-    [labels, numClusters] = pcsegdist(pcDenoised, handles.valMinDistance, 'NumClusterPoints', [handles.valMinPoints handles.valMaxPoints]);
+if (handles.habSegmentaPorThreshold)
+    % Efetua um procedimento de filtragem utilizando a distância ecuclidiana
+    % entre o ponto XYZ e a origem do LiDAR, usa threshold de distânica mínima
+    % e máxima definidas nas viariáveis:
+    % - handles.valThresholdMinDistance
+    % - handles.valThresholdMaxDistance.
+    pcThresholded= pcFiltraDistancia(pcDenoised, handles);
     
-    % Remove os pontos que não tem valor de label válido, ou seja =0.
-    idxValidPoints = find(labels);
+    % Se estiver habilitado salva a PC segmentada:
+    if (handles.habSavePcSeg)        
+        answer = questdlg('Salvar a PC segemntada?', 'Dessert Menu', 'Sim', 'Não', 'Sim');
+        switch answer
+            case 'Sim'
+                if (isdir(handles.pathSavePC))
+                    fullPath= fullfile(handles.pathSavePC, '*.pcd');
+                    result= dir(fullPath);
+                    numFilesPCD= length(result);
+                    numFile= numFilesPCD + 1;
+                    nameFile= sprintf('%0.4d.pcd',numFile);
+                    fullPath= fullfile(handles.pathSavePC, nameFile);
+                    pcwrite(pcThresholded, fullPath); 
+                else
+                    mkdir(handles.pathSavePC)
+                    numFile= 1;
+                    nameFile= sprintf('%0.4d.pcd',numFile);
+                    fullPath= fullfile(handles.pathSavePC, nameFile);
+                    pcwrite(pcThreshold, fullPath); 
+                end
+            case 'Não'                
+    end 
+else
+    % Segmenta a nuvem de pontos em clusters com a função pcsegdist(): 
+    if (handles.habFunction_SegmentaLidarData)
+        [labels, numClusters] = segmentLidarData(pc, handles.valMinDistance, [handles.valMimPoints handles.valMaxPoints]);
+        % Remove os pontos que não tem valor de label válido, ou seja =0.
+        idxValidPoints = find(labels);
 
-    % Guarda o cluster definidos na variável "idxValidPoints" quem contém 
-    % os endereços com os pontos válidos:
-    labelColorIndex = labels(idxValidPoints);
+        % Guarda o cluster definidos na variável "idxValidPoints" quem contém 
+        % os endereços com os pontos válidos:
+        labelColorIndex = labels(idxValidPoints);
 
-    % Gera um nuvem de pontos com os valores segmentados:
-    pcSegmented = select(pcDenoised, idxValidPoints);
-end    
-
-
-% Gera uma nuvem de pontos para cada cluster:
-for (ctCluster=1:numClusters)
-    pcCluster{ctCluster}= select(pcDenoised, labels==ctCluster);
-end
-fprintf(' PC lida contém -> %d clusters.\n', numClusters); 
-
-% Se estiver habilitado chama função para exibir os resultados da segmentação:
-if (handles.showPcSegmentada && (numClusters>0)) 
-    fShowPcSegmentada(pcCluster, pcSegmented, numClusters, labelColorIndex);
-end
-
-% Se estiver habilitado salva a PC segmentada:
-if (handles.habSavePcSeg) 
-    if (numClusters>0) 
-        fullPath= fullfile(pathToSave, nameFile);
-        pcwrite(pcCluster{pcNum},fullPath); 
+        % Gera um nuvem de pontos com os valores segmentados:
+        pcSegmented = select(pc,idxValidPoints);
     else
-        fprintf(' Atenção!!! Não foram detectados clusters em: "%s"\n', handles.PcToRead);
-        msg=' Digite qualquer tecla para continuar:';
-        key= input(msg, 's');
+        [labels, numClusters] = pcsegdist(pcDenoised, handles.valMinDistance, 'NumClusterPoints', [handles.valMinPoints handles.valMaxPoints]);
+
+        % Remove os pontos que não tem valor de label válido, ou seja =0.
+        idxValidPoints = find(labels);
+
+        % Guarda o cluster definidos na variável "idxValidPoints" quem contém 
+        % os endereços com os pontos válidos:
+        labelColorIndex = labels(idxValidPoints);
+
+        % Gera um nuvem de pontos com os valores segmentados:
+        pcSegmented = select(pcDenoised, idxValidPoints);
     end
-end    
+    
+    % Gera uma nuvem de pontos para cada cluster:
+    for (ctCluster=1:numClusters)
+        pcCluster{ctCluster}= select(pcDenoised, labels==ctCluster);
+    end
+    fprintf(' PC lida contém -> %d clusters.\n', numClusters); 
+
+    % Se estiver habilitado chama função para exibir os resultados da segmentação:
+    if (handles.showPcSegmentada && (numClusters>0)) 
+        fShowPcSegmentada(pcCluster, pcSegmented, numClusters, labelColorIndex);
+    end
+end
+
+
+   
 end

@@ -22,7 +22,7 @@ function varargout = segmenta_GUI(varargin)
 
 % Edit the above text to modify the response to help segmenta_GUI
 
-% Last Modified by GUIDE v2.5 28-Dec-2022 19:10:42
+% Last Modified by GUIDE v2.5 29-Dec-2022 10:44:44
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -61,20 +61,22 @@ handles.pathSavePC= handles.staticPathSavePC.String;
 handles.pathReadPC= "";
 
 %
-% Parâmetros para segemtação das PCs para definir o ROI do plano, esses 
+% Parâmetros para segmentação das PCs para definir o ROI do plano, esses 
 % parâmetros são usados na função pcsegdist().
-handles.valMinDistance= 0.05; 
-handles.valMinPoints= 800;
+handles.valMinDistance= str2double(handles.txtMinDistance.String); %0.05; 
+handles.valMinPoints= str2double(handles.txtNumMinPontosPorCluster.String); %500;
+handles.valMaxPoints= str2double(handles.txtNumMaxPontosPorCluster.String); %1500;
 
 % Define os thresholds de distância e angular para segmantar a PC e definir 
 % um ROI, esses parâmetros são usados na função segmentaLidarData().
-handles.valThresholdDistance= str2double(handles.txtThresoldDistance.String);
-handles.valThresholdAngle= str2double(handles.txtThresholdAngle.String);
+handles.valThresholdMaxDistance= str2double(handles.txtThresholdMaxDistance.String);
+handles.valThresholdMinDistance= str2double(handles.txtThresholdMinDistance.String);
+
 
 %Se "handles.habFunction_SegmentaLidarData" estiver el nivel alto será habilitada
 % a função "segmentaLidarData()", caso contrário serpa usada a função
 % "pcsegdist".
-handles.habFunction_SegmentaLidarData= handles.checkShowPCs.Value;
+handles.habSegmentaPorThreshold= handles.checkSelectSegFunctionMatlab.Value;
 handles.habSavePcSeg= 0;
 
 handles.extPC= "pcd";
@@ -220,7 +222,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
 function txtMinDistance_Callback(hObject, eventdata, handles)
 % hObject    handle to txtMinDistance (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -245,7 +246,7 @@ function txtMinDistance_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-set(hObject, 'Enable'
+set(hObject, 'Enable', 'on');
 
 
 % --- Executes on button press in checkShowPCs.
@@ -265,44 +266,46 @@ function checkShowPCs_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 
-% --- Executes on button press in checkSelectFunction.
-function checkSelectFunction_Callback(hObject, eventdata, handles)
-% hObject    handle to checkSelectFunction (see GCBO)
+% --- Executes on button press in checkSelectSegFunctionMatlab.
+function checkSelectSegFunctionMatlab_Callback(hObject, eventdata, handles)
+% hObject    handle to checkSelectSegFunctionMatlab (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of checkSelectFunction
+% Hint: get(hObject,'Value') returns toggle state of checkSelectSegFunctionMatlab
 if (hObject.Value== 1)
-    handles.txtThresoldDistance.Enable= 'on';
-    handles.txtThresholdAngle.Enable= 'on';
     handles.txtMinDistance.Enable= 'off';
     handles.txtNumMinPontosPorCluster.Enable= 'off';
-    handles.habFunction_SegmentaLidarData= 1;
+    handles.txtNumMaxPontosPorCluster.Enable= 'off';
+    handles.txtThresholdMinDistance.Enable= 'on';
+    handles.txtThresholdMaxDistance.Enable= 'on';
+    handles.habSegmentaPorThreshold= 1;
 else
-    handles.txtThresoldDistance.Enable= 'off';
-    handles.txtThresholdAngle.Enable= 'off';
     handles.txtMinDistance.Enable= 'on';
     handles.txtNumMinPontosPorCluster.Enable= 'on';
+    handles.txtNumMaxPontosPorCluster.Enable= 'on';
+    handles.txtThresholdMinDistance.Enable= 'off';
+    handles.txtThresholdMaxDistance.Enable= 'off';
     handles.habFunction_SegmentaLidarData= 0;
 end
 
 
-function txtThresoldDistance_Callback(hObject, eventdata, handles)
-% hObject    handle to txtThresoldDistance (see GCBO)
+function txtThresholdMinDistance_Callback(hObject, eventdata, handles)
+% hObject    handle to txtThresholdMinDistance (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of txtThresoldDistance as text
-%        str2double(get(hObject,'String')) returns contents of txtThresoldDistance as a double
+% Hints: get(hObject,'String') returns contents of txtThresholdMinDistance as text
+%        str2double(get(hObject,'String')) returns contents of txtThresholdMinDistance as a double
 str= get(hObject, 'String');
-handles.valThresholdDistance= str2num(str);
+handles.valThresholdMinDistance= str2double(str);
 % Update handles structure
 guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
-function txtThresoldDistance_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to txtThresoldDistance (see GCBO)
+function txtThresholdMinDistance_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtThresholdMinDistance (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -311,26 +314,26 @@ function txtThresoldDistance_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-set(hObject,'String','3.0');
+set(hObject,'String','0.5');
 
 
 
-function txtThresholdAngle_Callback(hObject, eventdata, handles)
-% hObject    handle to txtThresholdAngle (see GCBO)
+function txtThresholdMaxDistance_Callback(hObject, eventdata, handles)
+% hObject    handle to txtThresholdMaxDistance (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of txtThresholdAngle as text
-%        str2double(get(hObject,'String')) returns contents of txtThresholdAngle as a double
+% Hints: get(hObject,'String') returns contents of txtThresholdMaxDistance as text
+%        str2double(get(hObject,'String')) returns contents of txtThresholdMaxDistance as a double
 str= get(hObject, 'String');
-handles.valThresholdAngle= str2num(str);
+handles.valThresholdMaxDistance= str2double(str);
 % Update handles structure
 guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
-function txtThresholdAngle_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to txtThresholdAngle (see GCBO)
+function txtThresholdMaxDistance_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtThresholdMaxDistance (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -339,7 +342,7 @@ function txtThresholdAngle_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-set(hObject,'String','30.0');
+set(hObject,'String','1.5');
 
 
 % --- Executes on button press in checkSalvaPcSegmantada.
@@ -388,18 +391,21 @@ set(hObject, 'Enable', 'off');
 
 
 
-function edit7_Callback(hObject, eventdata, handles)
-% hObject    handle to edit7 (see GCBO)
+function txtNumMaxPontosPorCluster_Callback(hObject, eventdata, handles)
+% hObject    handle to txtNumMaxPontosPorCluster (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit7 as text
-%        str2double(get(hObject,'String')) returns contents of edit7 as a double
-
+% Hints: get(hObject,'String') returns contents of txtNumMaxPontosPorCluster as text
+%        str2double(get(hObject,'String')) returns contents of txtNumMaxPontosPorCluster as a double
+str= get(hObject, 'String');
+handles.valMaxPoints= str2num(str);
+% Update handles structure
+guidata(hObject, handles);
 
 % --- Executes during object creation, after setting all properties.
-function edit7_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit7 (see GCBO)
+function txtNumMaxPontosPorCluster_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtNumMaxPontosPorCluster (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -411,23 +417,16 @@ end
 
 
 
-function edit8_Callback(hObject, eventdata, handles)
-% hObject    handle to edit8 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit8 as text
-%        str2double(get(hObject,'String')) returns contents of edit8 as a double
-
-
 % --- Executes during object creation, after setting all properties.
-function edit8_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit8 (see GCBO)
+function checkSelectSegFunctionMatlab_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to checkSelectSegFunctionMatlab (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
+set(hObject, 'Value', 0); 
 
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
+
+% --- Executes when figure1 is resized.
+function figure1_SizeChangedFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
