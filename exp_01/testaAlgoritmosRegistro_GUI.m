@@ -22,7 +22,7 @@ function varargout = testaAlgoritmosRegistro_GUI(varargin)
 
 % Edit the above text to modify the response to help testaAlgoritmosRegistro_GUI
 
-% Last Modified by GUIDE v2.5 21-Dec-2022 19:16:14
+% Last Modified by GUIDE v2.5 26-Dec-2022 10:28:07
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -57,8 +57,8 @@ function testaAlgoritmosRegistro_GUI_OpeningFcn(hObject, eventdata, handles, var
 % Os únicos paths que precisam serem definidos são o handles.path.BaseRead e
 % o handles.path.BaseSave:
 
-handles.path.BaseRead= 'D:\Moacir\ensaios\2022.11.25 - LiDAR Com Interferometro\experimento_01';
-handles.path.BaseSave= 'D:\Moacir\ensaios\2022.11.25 - LiDAR Com Interferometro\experimento_01';
+handles.path.BaseRead= handles.staticPathRead.String;
+handles.path.BaseSave= handles.staticPathSave.String;
 
 % Outros paths fixos, que são gerados automaticametne pelo programa:
 handles.path.PCReg= '\out\pcReg'; % Folder onde serão salvas as PCs registradas
@@ -251,7 +251,7 @@ function btPathBaseRead_Callback(hObject, eventdata, handles)
 % hObject    handle to btPathBaseRead (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles.path.BaseRead= uigetdir('Select a directory');
+handles.path.BaseRead= uigetdir(handles.staticPathRead.String);
 % Update handles structure
 guidata(hObject, handles);
 
@@ -427,7 +427,7 @@ function btPathBaseSave_Callback(hObject, eventdata, handles)
 % hObject    handle to btPathBaseSave (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles.path.BaseSave= uigetdir('Select a directory');
+handles.path.BaseSave= uigetdir(handles.staticPathSave.String);
 % Update handles structure
 guidata(hObject, handles);
 
@@ -497,3 +497,41 @@ function txtDistanciasMedidas_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes during object creation, after setting all properties.
+function staticPathRead_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to staticPathRead (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+set(hObject, 'String', 'C:\Projetos\Matlab\Experimentos\2022.11.25 - LiDAR Com Interferometro\experimento_01\pcd');
+
+
+
+% --- Executes during object creation, after setting all properties.
+function staticPathSave_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to staticPathSave (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+set(hObject, 'String', 'C:\Projetos\Matlab\Experimentos\2022.11.25 - LiDAR Com Interferometro\experimento_01');
+
+
+% --- Executes during object creation, after setting all properties.
+function btPathBaseRead_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to btPathBaseRead (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes during object creation, after setting all properties.
+function btPathBaseSave_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to btPathBaseSave (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes during object creation, after setting all properties.
+function btSair_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to btPathBaseSave (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called

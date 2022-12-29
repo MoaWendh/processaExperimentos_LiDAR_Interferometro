@@ -5,26 +5,26 @@
 % arquivos "xls" gerados no experiento com o laser interferométrico
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [pc pcDenoised]= fCarregaPCs(param)
+function [pc pcDenoised]= fCarregaPCs(handles)
 
 fprintf(' Carregando PCs ');
 % Faz a leitura de todas as nuvens de pontos no formato '.pcd'.
-for (ctFolder=1:param.val.numFolders) 
-    path= sprintf('%s%s%0.4d\\', param.path.BaseRead, param.name.FolderBase, ctFolder*200);
+for (ctFolder=1:handles.val.numFolders) 
+    path= sprintf('%s%s%0.4d\\', handles.path.BaseRead, handles.name.FolderBase, ctFolder*200);
     % Verifica os folders
     infoFolder= dir(fullfile(path, '*.pcd'));
     %¨numFiles= length(infoFolder(not([infoFolder.isdir])));
     ctPos= 0;
-    for (ctFile= param.val.fileIni:param.val.fileEnd)
+    for (ctFile= handles.val.fileIni:handles.val.fileEnd)
         ctPos= ctPos + 1;
-        nameFile= sprintf('%0.4d.%s', ctFile, param.name.extPC);
+        nameFile= sprintf('%0.4d.%s', ctFile, handles.name.extPC);
         fullPath = fullfile(path, nameFile);
         pc{ctFolder,ctPos}= pcread(fullPath);  
         % Filtra o ruído da nuvem de pontos a ser registrada.
         pcDenoised{ctFolder,ctPos} = pcdenoise(pc{ctFolder,ctPos});
     
         % Exiber nuvem de pontos de estiver habilitado:
-        if (param.show.PC)
+        if (handles.show.PC)
             if (ctFolder==1) 
                 handle= figure;
             end
