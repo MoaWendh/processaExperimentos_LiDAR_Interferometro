@@ -13,9 +13,14 @@ ct= 0;
 for (i=1:length(pc.Location))
     distEuclidiana= norm(pc.Location(i,:));
     if (distEuclidiana> handles.valThresholdMinDistance) && ...
-                           (distEuclidiana< handles.valThresholdMinDistance)
+                           (distEuclidiana< handles.valThresholdMaxDistance)
         ct= ct+1;
-        pcThresholded(i,:)= pc.Location(i,:);       
-    end
+        location(ct,:)= pc.Location(i,:);
+        intensity(ct,:)= pc.Intensity(i,:);
+    end    
 end
+pcThreshold= pointCloud(location, 'Intensity', intensity);
+
+fShowPcFiltradaPorDistancia(pc, pcThreshold, handles);
+
 end

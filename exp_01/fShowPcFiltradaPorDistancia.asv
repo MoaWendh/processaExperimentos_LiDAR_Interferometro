@@ -1,0 +1,15 @@
+function fShowPcFiltradaPorDistancia(pc, handles)
+    
+% Cria um novo mapa de cores para os clusters
+figure;
+% Exibe a nuvem de pontos segmentada inteira:
+
+pcshow(pc.Location);
+num
+msg= sprintf('PC filtrada com threshold: Min= %0.2fm e Max= %0.2fm', handles.valThresholdMinDistance, handles.valThresholdMaxDistance');
+title(msg);
+xlabel('X (m)');
+ylabel('Y (m)');
+zlabel('Z (m)');
+
+end
