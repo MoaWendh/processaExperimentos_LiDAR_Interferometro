@@ -14,6 +14,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function fAjustaPlanoPC(handles)
 clc;
+close all;
 
 % Se o flag "enableSimulation" estiver ativado, será efetuada uma análise 
 % do princípio teórico da geometria alanítica aplicada através da função 
@@ -39,6 +40,10 @@ if (~handles.enableSimulation)
         pcDenoised = pcdenoise(pc);   
 
         % Ajusta um plano entre a nuvem de pontos:
+        % O parâmetro "handles.maxDistance" cotpem o valor da máxima distância
+        % entre um ponto "inlier" e o plano ajustado. Neste projeto a unidade 
+        % é definida em metros. Pontos com distâncias maiores que a
+        % definida neste parâmetro não serão usados no ajuste do plano.
         [plane, inlierIndices, outlierIndices, error]= pcfitplane(pc, handles.maxDistance);
         pcPlane= select(pc, inlierIndices);
         remainPtCloud= select(pc, outlierIndices);
@@ -50,10 +55,10 @@ if (~handles.enableSimulation)
         % - vet= vetor normal ao plano colinear a reta "r".
         % - d= norma do vetor "vet", ou seja, distânica absoluta.
         % - dp= desvio padrão de todas as disTañcia entre cada ponto da PC e o plano.
-        [pontoNoPlano vetorN rangePontoPlano media dp]= fCalculaDistanciaPontoPlano(plane, pc); %pcPlane);
+        [pontoNoPlano vetorN rangePontoPlano media dp]= fCalculaDistanciaPontoPlano(plane, pcPlane); %pc);
 
-        % Cahama função para exibir os rsultados:
-        fShowAnaliseAjustePlano(pc, pcPlane, plane, pontoNoPlano, vetorN, rangePontoPlano, media, dp);
+        % Chama função para exibir os resultados:
+        fShowAnaliseAjustePlano(pc, pcPlane, plane, pontoNoPlano, vetorN, rangePontoPlano, media, dp, handles.maxDistance, handles.numBins);
     else
         msg= sprintf('Erro!!!Numero de canais da PC imcompatível!! Escolha outra PC.');
         msgbox(msg);

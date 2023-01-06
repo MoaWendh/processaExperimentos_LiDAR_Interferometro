@@ -7,6 +7,11 @@
 function fSegmentaPC(handles)
 clc;
 
+% Para usar o close all é necessário mudar o HandleVisibility do
+% painelprincial para "off". Assim, quando for finalizado, antes será necessário
+% tornar este parametro novamente para "on" e depois executar close all.
+close all;
+
 infoFolder= dir(fullfile(handles.pathReadPC, '*.pcd'));
 numPCs= length(infoFolder(not([infoFolder.isdir])));
 
@@ -42,34 +47,22 @@ if (handles.habSegmentaPorThreshold)
                     fullPath= fullfile(handles.pathSavePC, nameFile);
                     pcwrite(pcThreshold, fullPath); 
                 end
-            case 'Não'                
+            case 'Não' 
+        end
     end 
 else
     % Segmenta a nuvem de pontos em clusters com a função pcsegdist(): 
-    if (handles.habFunction_SegmentaLidarData)
-        [labels, numClusters] = segmentLidarData(pc, handles.valMinDistance, [handles.valMimPoints handles.valMaxPoints]);
-        % Remove os pontos que não tem valor de label válido, ou seja =0.
-        idxValidPoints = find(labels);
+    [labels, numClusters] = pcsegdist(pcDenoised, handles.valMinDistance, 'NumClusterPoints', [handles.valMinPoints handles.valMaxPoints]);
 
-        % Guarda o cluster definidos na variável "idxValidPoints" quem contém 
-        % os endereços com os pontos válidos:
-        labelColorIndex = labels(idxValidPoints);
+    % Remove os pontos que não tem valor de label válido, ou seja =0.
+    idxValidPoints = find(labels);
 
-        % Gera um nuvem de pontos com os valores segmentados:
-        pcSegmented = select(pc,idxValidPoints);
-    else
-        [labels, numClusters] = pcsegdist(pcDenoised, handles.valMinDistance, 'NumClusterPoints', [handles.valMinPoints handles.valMaxPoints]);
+    % Guarda o cluster definidos na variável "idxValidPoints" quem contém 
+    % os endereços com os pontos válidos:
+    labelColorIndex = labels(idxValidPoints);
 
-        % Remove os pontos que não tem valor de label válido, ou seja =0.
-        idxValidPoints = find(labels);
-
-        % Guarda o cluster definidos na variável "idxValidPoints" quem contém 
-        % os endereços com os pontos válidos:
-        labelColorIndex = labels(idxValidPoints);
-
-        % Gera um nuvem de pontos com os valores segmentados:
-        pcSegmented = select(pcDenoised, idxValidPoints);
-    end
+    % Gera um nuvem de pontos com os valores segmentados:
+    pcSegmented = select(pcDenoised, idxValidPoints);
     
     % Gera uma nuvem de pontos para cada cluster:
     for (ctCluster=1:numClusters)
@@ -81,8 +74,5 @@ else
     if (handles.showPcSegmentada && (numClusters>0)) 
         fShowPcSegmentada(pcCluster, pcSegmented, numClusters, labelColorIndex);
     end
-end
-
-
-   
+end  
 end
