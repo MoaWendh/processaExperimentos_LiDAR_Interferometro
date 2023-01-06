@@ -22,7 +22,7 @@ function varargout = segmenta_GUI(varargin)
 
 % Edit the above text to modify the response to help segmenta_GUI
 
-% Last Modified by GUIDE v2.5 29-Dec-2022 10:52:29
+% Last Modified by GUIDE v2.5 03-Jan-2023 17:07:23
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -76,11 +76,16 @@ handles.valThresholdMinDistance= str2double(handles.txtThresholdMinDistance.Stri
 %Se "handles.habFunction_SegmentaLidarData" estiver el nivel alto será habilitada
 % a função "segmentaLidarData()", caso contrário serpa usada a função
 % "pcsegdist".
-handles.habSegmentaPorThreshold= handles.checkSelectSegByThreshold.Value;
-handles.habSavePcSeg= 0;
+handles.habSavePcSeg= handles.checkSalvaPcSegmantada.Value;
 
 handles.extPC= "pcd";
 handles.showPcSegmentada= 1;
+
+% Rotina para fechar todas as figuras aberrtas no Matalab:
+%n= length(figure);
+%for (i=1:n)
+ %   close(figure i);
+%end
 
 
 %**************************************************************************
@@ -92,7 +97,7 @@ handles.output = hObject;
 guidata(hObject, handles);
 
 % UIWAIT makes segmenta_GUI wait for user response (see UIRESUME)
-% uiwait(handles.figure1);
+% uiwait(handles.panelMain);
 
 
 % --- Outputs from this function are returned to the command line.
@@ -137,9 +142,12 @@ function btSair_Callback(hObject, eventdata, handles)
 % hObject    handle to btSair (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+handles.panelMain.HandleVisibility= 'on';
+close all;
+
 clc;
 clear;
-close all;
 
 
 % --- Executes on button press in btExecutar.
@@ -274,22 +282,26 @@ function checkSelectSegByThreshold_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of checkSelectSegByThreshold
-if (hObject.Value== 1)
-    handles.txtMinDistance.Enable= 'off';
-    handles.txtNumMinPontosPorCluster.Enable= 'off';
-    handles.txtNumMaxPontosPorCluster.Enable= 'off';
-    handles.txtThresholdMinDistance.Enable= 'on';
-    handles.txtThresholdMaxDistance.Enable= 'on';
-    handles.habSegmentaPorThreshold= 1; 
-else
+if (hObject.Value)
+    % Habilita o uso da função de segmentação do Matlab pcsegdist():
     handles.txtMinDistance.Enable= 'on';
     handles.txtNumMinPontosPorCluster.Enable= 'on';
     handles.txtNumMaxPontosPorCluster.Enable= 'on';
     handles.txtThresholdMinDistance.Enable= 'off';
     handles.txtThresholdMaxDistance.Enable= 'off';
     handles.habSegmentaPorThreshold= 0;
+else
+    % Habilita o uso da função de segmentação usando o threshold de
+    % distancia m[inima e máxima:
+    handles.txtMinDistance.Enable= 'off';
+    handles.txtNumMinPontosPorCluster.Enable= 'off';
+    handles.txtNumMaxPontosPorCluster.Enable= 'off';
+    handles.txtThresholdMinDistance.Enable= 'on';
+    handles.txtThresholdMaxDistance.Enable= 'on';
+    handles.habSegmentaPorThreshold= 1; 
 end
-
+% Update handles structure
+guidata(hObject, handles);
 
 function txtThresholdMinDistance_Callback(hObject, eventdata, handles)
 % hObject    handle to txtThresholdMinDistance (see GCBO)
@@ -343,7 +355,7 @@ function txtThresholdMaxDistance_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-set(hObject,'String','1.5');
+set(hObject,'String','1.2');
 
 
 % --- Executes on button press in checkSalvaPcSegmantada.
@@ -372,7 +384,7 @@ function checkSalvaPcSegmantada_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to checkSalvaPcSegmantada (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
-set(hObject,'Value', 0);
+set(hObject,'Value', 1);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -380,7 +392,7 @@ function staticPathSavePC_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to staticPathSavePC (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
-set(hObject, 'Enable', 'off'); 
+set(hObject, 'Enable', 'on'); 
 
 
 % --- Executes during object creation, after setting all properties.
@@ -388,7 +400,7 @@ function btPathSavePC_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to btPathSavePC (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
-set(hObject, 'Enable', 'off'); 
+set(hObject, 'Enable', 'on'); 
 
 
 
@@ -423,11 +435,15 @@ function checkSelectSegByThreshold_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to checkSelectSegByThreshold (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
-set(hObject, 'Value', 1); 
+set(hObject, 'Value', 0); 
+% Inicia habilitando o uso da função de segmentação por threshold de
+% distância mínima e máxima:
+handles.habSegmentaPorThreshold= 1;
+% Update handles structure
+guidata(hObject, handles);
 
-
-% --- Executes when figure1 is resized.
-function figure1_SizeChangedFcn(hObject, eventdata, handles)
-% hObject    handle to figure1 (see GCBO)
+% --- Executes when panelMain is resized.
+function panelMain_SizeChangedFcn(hObject, eventdata, handles)
+% hObject    handle to panelMain (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)

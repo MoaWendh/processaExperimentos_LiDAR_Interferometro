@@ -22,7 +22,7 @@ function varargout = ajustaPlano_GUI(varargin)
 
 % Edit the above text to modify the response to help ajustaPlano_GUI
 
-% Last Modified by GUIDE v2.5 29-Dec-2022 17:46:03
+% Last Modified by GUIDE v2.5 05-Jan-2023 20:05:26
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -70,7 +70,7 @@ handles.output = hObject;
 guidata(hObject, handles);
 
 % UIWAIT makes ajustaPlano_GUI wait for user response (see UIRESUME)
-% uiwait(handles.figure1);
+% uiwait(handles.panelBase);
 
 
 % --- Outputs from this function are returned to the command line.
@@ -108,9 +108,10 @@ function pbSair_Callback(hObject, eventdata, handles)
 % hObject    handle to pbSair (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-clear;
-clc;
+handles.panelBase.HandleVisibility= 'on';
 close all;
+clc;
+clear;
 
 
 % --- Executes on button press in pbExecAjustaPlano.
@@ -286,4 +287,36 @@ function Untitled_1_Callback(hObject, eventdata, handles)
 % hObject    handle to Untitled_1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+
+function txtNumBins_Callback(hObject, eventdata, handles)
+% hObject    handle to txtNumBins (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txtNumBins as text
+%        str2double(get(hObject,'String')) returns contents of txtNumBins as a double
+str=get(hObject, 'String');
+handles.numBins= str2num(str);
+% Update handles structure
+guidata(hObject, handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function txtNumBins_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtNumBins (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+hObject.String= 20;
+str=get(hObject, 'String');
+handles.numBins= str2num(str);
+% Update handles structure
+guidata(hObject, handles);
 
