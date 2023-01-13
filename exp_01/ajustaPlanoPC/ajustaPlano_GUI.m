@@ -56,6 +56,8 @@ function ajustaPlano_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.file= ""; % handles.staticBrowseFile.String;
 handles.path= "";
 handles.pathPC= "";
+handles.pathOut= "analise";
+handles.pathSave= "";
 
 handles.maxDistance= str2num(handles.txtMaxDistance.String);
 handles.vetorNormal= str2num(handles.txtVetorNormal.String);
@@ -90,10 +92,15 @@ function btPathReadPC_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Faz a leitura da nuvem de pontos para ajuste de plano:
+% Define o path e a PC que será lida para ajustar o plano:
 [handles.file, handles.path] = uigetfile(handles.staticBrowseFile.String);
 handles.pathPC= fullfile(handles.path,handles.file);
 handles.staticBrowseFile.String= handles.pathPC;
+
+% Define path onde serão salvos os resultados, figuras, da análise:
+handles.pathSave= sprintf('%s%s', handles.path, handles.pathOut); 
+handles.staticPathSave.String= handles.pathSave; 
+
 % Habilita o gráfico axes1 para exibir a PC:
 figA= figure;
 pcshow(handles.pathPC);
@@ -290,7 +297,7 @@ function Untitled_1_Callback(hObject, eventdata, handles)
 
 
 
-function txtNumBins_Callback(hObject, eventdata, handles)
+function txtNumBins_Callback(hObject, ~, handles)
 % hObject    handle to txtNumBins (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)

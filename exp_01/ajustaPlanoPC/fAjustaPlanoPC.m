@@ -58,7 +58,8 @@ if (~handles.enableSimulation)
         [pontoNoPlano vetorN rangePontoPlano media dp]= fCalculaDistanciaPontoPlano(plane, pcPlane); %pc);
 
         % Chama função para exibir os resultados:
-        fShowAnaliseAjustePlano(pc, pcPlane, plane, pontoNoPlano, vetorN, rangePontoPlano, media, dp, handles.maxDistance, handles.numBins);
+      %  fShowAnaliseAjustePlano(pc, pcPlane, plane, pontoNoPlano, vetorN, rangePontoPlano, media, dp, handles.maxDistance, handles.numBins);
+        fShowAnaliseAjustePlano(pc, pcPlane, plane, pontoNoPlano, vetorN, rangePontoPlano, media, dp, handles);
     else
         msg= sprintf('Erro!!!Numero de canais da PC imcompatível!! Escolha outra PC.');
         msgbox(msg);
