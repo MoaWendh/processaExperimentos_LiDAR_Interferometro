@@ -59,9 +59,6 @@ nameFile= sprintf('%0.4d.%s',1, handles.name.extPC);
 fullPath= fullfile(pathToSavePCReg, nameFile);
 pcwrite(pc{1,1}, fullPath);
 
-% Chama função para separar os 16 canais da PC de referênicia LiDAR.
-fSeparaCanais(pc{1,1}, handles, 1);
-
 for (ctPC=2:length(pc))
    pcAux= pc{ctPC,1};
    
@@ -99,9 +96,6 @@ for (ctPC=2:length(pc))
    
    % Executa o registro, alinhamento das PCs.
    pcAligned(ctPC-1)= pctransform(pcAux, tformAccum);
-   
-   % Chama função para separar os 16 canais do LiDAR.
-   fSeparaCanais(pcAligned(ctPC-1), handles, ctPC);
    
    % Salva a transformação de corpo rígido da PC atual:
    nameFile= sprintf('%s%0.4d',handles.name.FileTForm, ctPC-1, '.mat');

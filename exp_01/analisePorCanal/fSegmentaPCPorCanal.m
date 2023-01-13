@@ -26,13 +26,56 @@
 %    15        13           13º
 %    16        15           15º
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function fSegmentaPCPorCanal()
-clear;
-clc;
+function handles= fSegmentaPCPorCanal(handles)
 close all;
 
+% Para evitar erro, se for escolhida apenas um arquivo, nuvem de pontos,
+% a variável "handles.fileSegmentar" não será cell e a função length() irá determinar o
+% número de caracteres contido na variável "handles.fileSegmentar", isto não é
+% desejável. Por isso é feito o teste abaixo:
+if iscell(handles.fileSegmentar)
+    numPCs= length(handles.fileSegmentar);
+else
+    numPCs= 1;
+end
+
+% Define uma mensagem a ser exibida:
+msg= sprintf(' -Total de nuvens de pontos: %d \n -Serão separados os canais:\n [ %s ]', numPCs, num2str(handles.cnSegmenta)) ;
+% Exibe uma menagem solicitando confirmação de execução:
+answer = questdlg(msg, 'Ok para continuar', 'Ok', 'Sair', 'Ok');
+% Handle response
+switch answer
+    case 'Ok'
+        habSegmentaCanais= 1;
+    case 'Sair'
+        habSegmentaCanais= 0;
+end
+
+if (habSegmentaCanais)
+    for (ctPC=1:numPCs)
+        % Faz leitura da nuvem de pontos:
+        if (numPCs==1)
+            handles.PcToRead= fullfile(handles.path, handles.fileSegmentar);
+        else
+            handles.PcToRead= fullfile(handles.path, handles.fileSegmentar{ctPC});
+        end
+        
+        % ATENÇÂO!!!!!!!!!!
+        % PAREI AQUII ELABORANDO O PATH PARA SEGMENTAÂO!!!!
+        
+        % Efetua a leitura da nuvem de pontos com do respectivo canal
+        % selecionado:
+        pc= pcread(handles.PcToRead);
+        
+        for (ctCn=1:length(handles.cn))
+        
+        end
+    end
+end
+
+
 % Definição de alguns paths:
-param.path.Base= 'D:\Moacir\ensaios\2022.11.25 - LiDAR Com Interferometro\experimento_01\Reg';
+param.path.Base= 'D:\Moacir\ensaios\2022.11.25 - LiDAR Com Interferometro\experimento_01\out\pcReg';
 param.name.extPC= 'pcd';
 % Define alguns parâmetros adicionais:
 param.path.numCanais= 16;
@@ -40,7 +83,7 @@ param.val.minDistance= 0.05;
 param.val.minPoints= 300;
 param.show.PCSegmented= 1;
 
-% Para cada canal da PC é efetuada a segmentação de uma linha.
+% Efetua a segmentação para o(s) canal(is) especificados:
 for (cn=1:param.path.numCanais)
     % Especifica o path de onde a PC será lida.
     nameFolder= sprintf('\\cn%0.2d',cn);

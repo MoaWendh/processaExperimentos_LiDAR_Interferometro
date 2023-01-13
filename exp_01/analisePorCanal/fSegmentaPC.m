@@ -25,7 +25,7 @@ if (handles.habSegmentaPorThreshold)
     % e máxima definidas nas viariáveis:
     % - handles.valThresholdMinDistance
     % - handles.valThresholdMaxDistance.
-    pcThresholded= pcFiltraDistancia(pcDenoised, handles);
+    pcThresholded= fPcFiltraDistancia(pcDenoised, handles);
     
     % Se estiver habilitado salva a PC segmentada:
     if (handles.habSavePcSeg)        
