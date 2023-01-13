@@ -7,7 +7,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function pcThresholded= pcFiltraDistancia(pc, handles)
+function pcThresholded= fPcFiltraDistancia(pc, handles)
 
 ct= 0;
 for (i=1:length(pc.Location))
