@@ -22,7 +22,7 @@ function varargout = analisePorCanal_GUI(varargin)
 
 % Edit the above text to modify the response to help analisePorCanal_GUI
 
-% Last Modified by GUIDE v2.5 13-Jan-2023 19:23:22
+% Last Modified by GUIDE v2.5 17-Jan-2023 18:24:40
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -52,12 +52,32 @@ function analisePorCanal_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to analisePorCanal_GUI (see VARARGIN)
 
+% Abaixo foi crada uma Lookup table contendo os vaerdadeiro canais e seus
+% respectivos ângulos:
+handles.lookUpTable= { 'cn00_15_graus_neg';
+                       'cn02_13_graus_neg';
+                       'cn04_11_graus_neg';
+                       'cn06_09_graus_neg';
+                       'cn08_07_graus_neg';
+                       'cn10_05_graus_neg';
+                       'cn12_03_graus_neg';
+                       'cn14_01_graus_neg';
+                       'cn01_01_graus_pos';
+                       'cn03_03_graus_pos';
+                       'cn05_05_graus_pos';
+                       'cn07_07_graus_pos';
+                       'cn09_09_graus_pos';
+                       'cn11_11_graus_pos';
+                       'cn13_13_graus_pos';
+                       'cn15_15_graus_pos'};
+
+% Definiçção de alguns handles: 
 handles.statusProgram= 'Aguardando comando.'
-handles.pathIni= 'C:\Projetos\Matlab\Experimentos\2022.11.25 - LiDAR Com Interferometro\experimento_01\out\pcReg';
+handles.pathBase= 'C:\Projetos\Matlab\Experimentos\2022.11.25 - LiDAR Com Interferometro\experimento_01\out\pcReg';
 
 % Minhas variáveis e parâmetros:
-handles.nameFolderToSaveCn= 'porCanal\separado\cn';
-handles.nameFolderToSaveSeg= 'porCanal\segmentado\cn';
+handles.folderToSaveSep= 'canalSeparado';
+handles.folderToSaveSeg= '\canalSegmentado';
 
 handles.extPC= 'pcd';
 
@@ -69,7 +89,6 @@ guidata(hObject, handles);
 
 % UIWAIT makes analisePorCanal_GUI wait for user response (see UIRESUME)
 % uiwait(handles.baseFigure);
-
 
 % --- Outputs from this function are returned to the command line.
 function varargout = analisePorCanal_GUI_OutputFcn(hObject, eventdata, handles) 
@@ -98,6 +117,7 @@ function pushSair_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.baseFigure.HandleVisibility= 'on';
+clc;
 close all;
 
 
@@ -108,7 +128,7 @@ function pbSeparaCanais_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Define a(s) PC(s) cujos canais serão separados:
-path= sprintf('%s%s', handles.pathIni,'\*.pcd');
+path= sprintf('%s%s', handles.pathBase,'\*.pcd');
 [handles.fileSeparar, handles.path]= uigetfile(path,'MultiSelect', 'on');
 if (handles.path==0)
     handles.statusProgram= "Path Inválido!!!!!";
@@ -122,7 +142,7 @@ else
     handles.staticShowStatusSepara.ForegroundColor= [0.467, 0.675, 0.188];
     % Chama a função principal que irá separar os canais:
     handles= fSeparaCanais(handles);
-    handles.staticShowStatusSepara.String= handles.statusProgram;
+    handles.staticShowStatusSepara.String= handles.statusProgram;    
 end
 
 % Update handles structure
@@ -160,8 +180,9 @@ if (handles.valMax>16 || handles.valMin<1)
     f = msgbox('Valor inválido!!', 'Error','error');
 else
     hObject.ForegroundColor= [0, 0.447, 0.471];   
+    
     handles.staticValValidosParaAnalise.String= hObject.String;
-    handles.staticValValidosParaSegmentacao.String= hObject.String;
+    
     handles.editSelecionaCanalParaSegmentacao.String= hObject.String;
     handles.editSelecionaCanalParaAnalise.String= hObject.String;
 end
@@ -187,7 +208,6 @@ handles.valMin= min(handles.cnSepara);
 
 % Update handles structure
 guidata(hObject, handles);
-
 
 
 function editSelecionaCanalParaAnalise_Callback(hObject, eventdata, handles)
@@ -231,9 +251,9 @@ function pbSegmentaCanal_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 % Define a(s) PC(s) cujos canais serão separados:
-path= sprintf('%s%s', handles.pathIni,'\*.pcd');
-[handles.fileSegmentar, handles.path]= uigetfile(path,'MultiSelect', 'on');
-if (handles.path==0)
+path= sprintf('%s\\%s', handles.pathBase, handles.folderToSaveSep);
+handles.pathRead= uigetdir(path);
+if (handles.pathRead==0)
     handles.statusProgram= "Path Inválido!!!!!";
     handles.staticShowStatusSegmenta.String= handles.statusProgram;
     handles.staticShowStatusSegmenta.ForegroundColor= [1, 0, 0];
@@ -243,8 +263,10 @@ else
     handles.statusProgram= "Segmentando...";
     handles.staticShowStatusSegmenta.String= handles.statusProgram;
     handles.staticShowStatusSegmenta.ForegroundColor= [0.467, 0.675, 0.188];
-    % Chama a função principal que irá separar os canais:
+    
+    % Chama a função principal que irá segmentar os canais:
     handles= fSegmentaPCPorCanal(handles);
+    handles.staticShowStatusSegmenta.String= handles.statusProgram;   
 end
 
 % Update handles structure
@@ -287,6 +309,243 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 handles.cnSegmenta= str2num(hObject.String);
+
+% Update handles structure
+guidata(hObject, handles);
+
+
+
+function editThresholdMin_Callback(hObject, eventdata, handles)
+% hObject    handle to editThresholdMin (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of editThresholdMin as text
+%        str2double(get(hObject,'String')) returns contents of editThresholdMin as a double
+
+handles.valThresholdMinDistance= str2num(hObject.String);
+
+% Update handles structure
+guidata(hObject, handles);
+
+
+
+% --- Executes during object creation, after setting all properties.
+function editThresholdMin_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to editThresholdMin (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+handles.valThresholdMinDistance= str2num(hObject.String);
+
+% Update handles structure
+guidata(hObject, handles);
+
+
+function editNumMimPoints_Callback(hObject, eventdata, handles)
+% hObject    handle to editNumMimPoints (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of editNumMimPoints as text
+%        str2double(get(hObject,'String')) returns contents of editNumMimPoints as a double
+
+handles.valMinPoints= str2num(hObject.String);
+
+% Update handles structure
+guidata(hObject, handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function editNumMimPoints_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to editNumMimPoints (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+handles.valMinPoints= str2num(hObject.String);
+
+% Update handles structure
+guidata(hObject, handles);
+
+
+
+% --- Executes on button press in radioExibePointCloud.
+function radioExibePointCloud_Callback(hObject, eventdata, handles)
+% hObject    handle to radioExibePointCloud (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radioExibePointCloud
+
+handles.habShowPC= hObject.Value;
+
+% Update handles structure
+guidata(hObject, handles);
+
+
+
+function editThresholdMax_Callback(hObject, eventdata, handles)
+% hObject    handle to editThresholdMax (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of editThresholdMax as text
+%        str2double(get(hObject,'String')) returns contents of editThresholdMax as a double
+
+handles.valThresholdMaxDistance= str2num(hObject.String);
+
+% Update handles structure
+guidata(hObject, handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function editThresholdMax_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to editThresholdMax (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+handles.valThresholdMaxDistance= str2num(hObject.String);
+
+% Update handles structure
+guidata(hObject, handles);
+
+% --- Executes on button press in radioHabSegFuncaoMatlab.
+function radioHabSegFuncaoMatlab_Callback(hObject, eventdata, handles)
+% hObject    handle to radioHabSegFuncaoMatlab (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radioHabSegFuncaoMatlab
+if hObject.Value
+    handles.editNumMimPoints.Enable= 'on';
+    handles.editDistanciaMinimaEntreClusters.Enable= 'on';
+    handles.editNumMaxPoints.Enable= 'on';
+    handles.habSegmentacaoNatMatlab= 1;
+else
+    handles.editNumMimPoints.Enable= 'off';
+    handles.editDistanciaMinimaEntreClusters.Enable= 'off';
+    handles.editNumMaxPoints.Enable= 'off';
+    handles.habSegmentacaoNatMatlab= 0;
+end
+
+% Update handles structure
+guidata(hObject, handles);
+
+function editNumMaxPoints_Callback(hObject, eventdata, handles)
+% hObject    handle to editNumMaxPoints (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of editNumMaxPoints as text
+%        str2double(get(hObject,'String')) returns contents of editNumMaxPoints as a double
+handles.valMaxPoints= str2num(hObject.String);
+
+% Update handles structure
+guidata(hObject, handles);
+
+
+
+% --- Executes during object creation, after setting all properties.
+function editNumMaxPoints_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to editNumMaxPoints (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.F
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+handles.valMaxPoints= str2num(hObject.String);
+
+% Update handles structure
+guidata(hObject, handles);
+
+
+function editDistanciaMinimaEntreClusters_Callback(hObject, eventdata, handles)
+% hObject    handle to editDistanciaMinimaEntreClusters (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of editDistanciaMinimaEntreClusters as text
+%        str2double(get(hObject,'String')) returns contents of editDistanciaMinimaEntreClusters as a double
+
+handles.valMinDistance= str2num(hObject.String);
+
+% Update handles structure
+guidata(hObject, handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function editDistanciaMinimaEntreClusters_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to editDistanciaMinimaEntreClusters (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes during object creation, after setting all properties.
+function radioHabSegFuncaoMatlab_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to radioHabSegFuncaoMatlab (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+handles.habSegmentacaoNatMatlab= 0;
+
+% Update handles structure
+guidata(hObject, handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function radioExibePointCloud_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to radioExibePointCloud (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+handles.habShowPC= hObject.Value;
+% Update handles structure
+guidata(hObject, handles);
+
+
+% --- Executes on button press in rdHabSavePcSegmented.
+function rdHabSavePcSegmented_Callback(hObject, eventdata, handles)
+% hObject    handle to rdHabSavePcSegmented (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of rdHabSavePcSegmented
+handles.habSavePCSeg= hObject.Value;
+
+% Update handles structure
+guidata(hObject, handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function rdHabSavePcSegmented_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to rdHabSavePcSegmented (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: get(hObject,'Value') returns toggle state of rdHabSavePcSegmented
+handles.habSavePCSeg= hObject.Value;
 
 % Update handles structure
 guidata(hObject, handles);
