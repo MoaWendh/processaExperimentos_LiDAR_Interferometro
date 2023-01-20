@@ -28,23 +28,6 @@ end
 % aos parãmetros de segmentação
 if (ct>0)
     pcThresholded= pointCloud(location, 'Intensity', intensity);
-
-    % Exibe as PCs apenas se o parâmetro "handles.habShowPC" estiver ativo:
-    if (handles.habShowPC)
-        fShowPcFiltradaPorDistancia(pc, pcThresholded, handles, ctCanal, pcCompleta);
-        msg= sprintf('Segmentação do canal %d concluida! Ok para continuar.',handles.cnSegmenta(ctCanal));
-        
-        % Atenção!!!!
-        % Neste caso onde deseja-se manipular a figura, não pode-se usar a
-        % função "questdlg()" para diálogo, pois ela tem o parãmetro modal,
-        % e isto trava todas as figuras. Então deve-se usar a função
-        % "msgbox()" seguida da função "uiwait()" que é modo "normal" e não
-        % "modal", isto possibilita manipular a figura exibida, tal como
-        % zoom, rotação deslocamento, etc.
-        
-        figMsgBox= msgbox(msg);
-        uiwait(figMsgBox);
-    end
     msg=sprintf('Segmetnando canal-> %d', ctCanal);
     handles.staticShowStatusSegmenta.String= msg;
 else

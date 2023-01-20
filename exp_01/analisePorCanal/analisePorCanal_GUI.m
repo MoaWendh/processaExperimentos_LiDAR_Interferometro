@@ -22,7 +22,7 @@ function varargout = analisePorCanal_GUI(varargin)
 
 % Edit the above text to modify the response to help analisePorCanal_GUI
 
-% Last Modified by GUIDE v2.5 17-Jan-2023 18:24:40
+% Last Modified by GUIDE v2.5 19-Jan-2023 17:40:39
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -106,9 +106,25 @@ function pbExecutaAnalise_Callback(hObject, eventdata, handles)
 % hObject    handle to pbExecutaAnalise (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-fAnaliseCanais(handles);
 
+path= sprintf('%s\\%s', handles.pathBase, handles.folderToSaveSeg);
+handles.pathRead= uigetdir(path);
+if (handles.pathRead==0)
+    handles.statusProgram= "Path Inválido!!!!!";
+    handles.staticShowStatusAnalise.String= handles.statusProgram;
+    handles.staticShowStatusAnalise.ForegroundColor= [1, 0, 0];
+    % Exibe msg de erro:
+    msgbox('Path inválido!!!!', 'error');
+else 
+    handles.statusProgram= "Efetuando análise...";
+    handles.staticShowStatusAnalise.String= handles.statusProgram;
+    handles.staticShowStatusAnalise.ForegroundColor= [0.467, 0.675, 0.188];
+    
+    % Chama a função principal que irá segmentar os canais:
+    handles= fAnalise(handles);
 
+    handles.staticShowStatusAnalise.String= handles.statusProgram;   
+end
 
 
 % --- Executes on button press in pushSair.
@@ -181,8 +197,7 @@ if (handles.valMax>16 || handles.valMin<1)
 else
     hObject.ForegroundColor= [0, 0.447, 0.471];   
     
-    handles.staticValValidosParaAnalise.String= hObject.String;
-    
+   
     handles.editSelecionaCanalParaSegmentacao.String= hObject.String;
     handles.editSelecionaCanalParaAnalise.String= hObject.String;
 end
@@ -243,7 +258,10 @@ function editSelecionaCanalParaAnalise_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+handles.cnAnalise= str2num(hObject.String);
 
+% Update handles structure
+guidata(hObject, handles);
 
 % --- Executes on button press in pbSegmentaCanal.
 function pbSegmentaCanal_Callback(hObject, eventdata, handles)
@@ -485,6 +503,8 @@ function editDistanciaMinimaEntreClusters_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of editDistanciaMinimaEntreClusters as text
 %        str2double(get(hObject,'String')) returns contents of editDistanciaMinimaEntreClusters as a double
 
+
+% O parâmetro "handles.valMinDistance" define a distância mínima que deve existir entre 2 ou mais cluster:
 handles.valMinDistance= str2num(hObject.String);
 
 % Update handles structure
@@ -502,7 +522,11 @@ function editDistanciaMinimaEntreClusters_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+% O parâmetro "handles.valMinDistance" define a distância mínima que deve existir entre 2 ou mais cluster:
+handles.valMinDistance= str2num(hObject.String);
 
+% Update handles structure
+guidata(hObject, handles);
 
 % --- Executes during object creation, after setting all properties.
 function radioHabSegFuncaoMatlab_CreateFcn(hObject, eventdata, handles)
@@ -546,6 +570,47 @@ function rdHabSavePcSegmented_CreateFcn(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of rdHabSavePcSegmented
 handles.habSavePCSeg= hObject.Value;
+
+% Update handles structure
+guidata(hObject, handles);
+
+
+
+function editSelecionaPcParaAnalise_Callback(hObject, eventdata, handles)
+% hObject    handle to editSelecionaPcParaAnalise (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of editSelecionaPcParaAnalise as text
+%        str2double(get(hObject,'String')) returns contents of editSelecionaPcParaAnalise as a double
+
+handles.PcAnalise= str2num(hObject.String);
+valMinAux= min(handles.PcAnalise);
+if (valMinAux<0)
+    hObject.String= 'Valor deve ser inteiro positivo.';
+    hObject.ForegroundColor= [1, 0, 0];
+    f = msgbox('Valor inválido!!', 'Error','error');
+else
+    hObject.ForegroundColor= [0, 0.447, 0.471];   
+end
+
+% Update handles structure
+guidata(hObject, handles);
+
+
+
+% --- Executes during object creation, after setting all properties.
+function editSelecionaPcParaAnalise_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to editSelecionaPcParaAnalise (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+handles.cnAnalise= str2num(hObject.String);
 
 % Update handles structure
 guidata(hObject, handles);

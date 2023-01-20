@@ -1,0 +1,13 @@
+function [handles analise]= fAnaliseCanal(pc, handles)
+
+    numPts= length(pc.Location);
+    
+    for (ctPt=1:numPts)
+        range(ctPt)= norm(pc.Location(ctPt,:);
+        
+    
+    end
+    
+    f = msgbox('Função ainda não elaborada!!!', 'Error','error');
+    
+end

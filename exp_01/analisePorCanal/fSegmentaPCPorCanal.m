@@ -30,7 +30,7 @@ function handles= fSegmentaPCPorCanal(handles)
 close all;
 
 if (~isdir(handles.pathRead))
-    msg= sprintf('Folder não existe! Verifique se os canais forma separados.');
+    msg= sprintf('Folder não existe! Verifique se os canais foram separados.');
     msgbox(msg);
     habSegmentaCanais= 0;
 else
@@ -68,9 +68,10 @@ end
 
 % Zera o vetor de erros, que identifica erro de segmentação no canal:
 handles.errorSegCn(1:length(handles.cnSegmenta))= 0;
+% Zera o contador de erro:
+ctError= 0;
 
 if (habSegmentaCanais)
-    ctError= 0;
     % Efetua a leitura da PC original com os 16 canais apenas para visualização:
     % Primeiro, descobrir o número da nuvem de pontos:
     numChar= length(handles.pathRead);
@@ -90,23 +91,26 @@ if (habSegmentaCanais)
         fullPathPcRead= fullfile(handles.pathRead, nameFile);
 
         % Efetua a leitura da nuvem de pontos com do respectivo canal selecionado:
-        pc= pcread(fullPathPcRead);
+        pcCanalSeparado= pcread(fullPathPcRead);
                
-        % Efetua a segmetnação em duas etapas:
+        % Se "handles.habSegmentacaoNatMatlab" estiver habilitado será efetuada
+        % a segmetnação em duas etapas:
         % 1ª) faz a segmentação considerando apenas a distância mínima, usando 
         %     a função "fPcFiltraDistancia";
         % 2ª) Refina a segmentação usando a função do matlaba "pcsegdist()".
-        % A 2ª etapa é opcional e executada depois da 1ª etapa.
-        % 
-        % 1ª Etapa:
-        [pcCanalSegmentado handles]= fPcFiltraDistancia(pc, handles, ctCn, pcCompleta);
-        
+        % A 2ª etapa é opcional e executada e depende do desempenho da 1ª etapa.
+       
         % Se não retornar erro de segmentação o processo continua: 
-        if (~handles.errorSegCn(ctCn))
-            % 2ª Etapa, apenas se estiver habilitada::           
+        if (~handles.errorSegCn(ctCn))          
             if (handles.habSegmentacaoNatMatlab)
-                [labels, numClusters] = pcsegdist(pcCanalSegmentada, handles.valMinDistance, 'NumClusterPoints', [handles.valMinPoints handles.valMaxPoints]);
+                % 1ª Etapa:
+                [pcCanalSegmentado01 handles]= fPcFiltraDistancia(pcCanalSeparado, handles, ctCn, pcCompleta); 
 
+                % O parâmetro "handles.valMinDistance" define a distância
+                % mínima que deve existir entre 2 ou mais cluster:
+                % 2ª Etapa: 
+                [labels, handles.numClusters] = pcsegdist(pcCanalSegmentado01, handles.valMinDistance, 'NumClusterPoints', [handles.valMinPoints handles.valMaxPoints]);
+                                
                 % Remove os pontos que não tem valor de label válido, ou seja =0.
                 idxValidPoints = find(labels);
 
@@ -115,27 +119,56 @@ if (habSegmentaCanais)
                 labelColorIndex = labels(idxValidPoints);
 
                 % Gera um nuvem de pontos com os valores segmentados:
-                pcCanalSegmentado = select(pcCanalSegmentada, idxValidPoints);
+                pcCanalSegmentado = select(pcCanalSegmentado01, idxValidPoints);
+            
+            else
+                % 1ª Etapa:
+                [pcCanalSegmentado handles]= fPcFiltraDistancia(pcCanalSeparado, handles, ctCn, pcCompleta); 
+                handles.numClusters= 1;
             end
-                       
+                        
+            % Exibe as PCs apenas se o parâmetro "handles.habShowPC" estiver ativo:
+            if (handles.habShowPC)
+                if (handles.habSegmentacaoNatMatlab)
+                    fShowPcFiltradaPorDistancia(pcCompleta, pcCanalSeparado, pcCanalSegmentado, pcCanalSegmentado01, handles, ctCn);
+                else
+                    fShowPcFiltradaPorDistancia(pcCompleta, pcCanalSeparado, pcCanalSegmentado, 0, handles, ctCn);
+                end
+                
+                % Sinaliza ao usuário se não for detectado cluster ou se o número de clusters for maior que 1:
+                if (handles.numClusters==0) || (handles.numClusters>1) 
+                    msg= sprintf(' Atenção!! \n Foram detectados %d clusters usando a função pcsegdist().', handles.numClusters);                    
+                    figMsgBox= msgbox(msg, 'Warn', 'warn');
+                else
+                    msg= sprintf(' Segmentação do canal %d concluida!\n Ok para continuar.', handles.cnSegmenta(ctCn));                       
+                    figMsgBox= msgbox(msg);
+                end
+                % Atenção!!!!
+                % Neste caso onde deseja-se manipular a figura, não pode-se usar a
+                % função "questdlg()" para diálogo, pois ela tem o parãmetro modal,
+                % e isto trava todas as figuras. Então deve-se usar a função
+                % "msgbox()" seguida da função "uiwait()" que é modo "normal" e não
+                % "modal", isto possibilita manipular a figura exibida, tal como
+                % zoom, rotação deslocamento, etc.
+                uiwait(figMsgBox);
+            end
+                      
             % Salva apenas se "handles.habSavePCSeg" estiver habilitado: 
-            if (handles.habSavePCSeg)
+            if (handles.habSavePCSeg) && (handles.numClusters==1)
                 % Define o path onde será salva a pc segmentada:
                 % Primeiro, descobrir o número da nuvem de pontos:
                 numChar= length(handles.pathRead);
                 numPC= handles.pathRead(numChar-3:numChar);
 
-                % Gerar o nome do folder onder a PC segmentada será salva:
-                nameFolder= sprintf('\\pc%s',numPC);
-                fullPathToSave= fullfile(handles.pathBase, handles.folderToSaveSeg,nameFolder);
-
+                % Gera o nome da PC a ser salva já com o valor original do
+                % canal conforme definido no handle "handles.lookUpTable":
+                nameFile= sprintf('\\pc%s_%s.%s', numPC, handles.lookUpTable{handles.cnSegmenta(ctCn)}, handles.extPC);
+                fullPathToSave= fullfile(handles.pathBase, handles.folderToSaveSeg);
+                
                 % Verifica se o folder existe, se não existir eles serão criados:                     
                 if ~isfolder(fullPathToSave)
                     mkdir(fullPathToSave);
                 end
-                % Gera o nome da PC a ser salva já com o valor original do
-                % canal conforme definido no handle "handles.lookUpTable":
-                nameFile= sprintf('%s.%s', handles.lookUpTable{handles.cnSegmenta(ctCn)}, handles.extPC);
                 
                 fullPathPcSave= fullfile(fullPathToSave, nameFile);
                 pcwrite(pcCanalSegmentado, fullPathPcSave);
@@ -149,11 +182,15 @@ if (habSegmentaCanais)
 end
 
 % Se ocoreu erro eles serão informados:
-if (ctError>0)
-    msg= sprintf(' Foram detectados erros de segmentação nos canais: %s. \n Analise as PCs e reajuste os parâmetros.', num2str(cnError));
-    answer= questdlg(msg, 'Erros de segmentação!', 'Ok', 'Ok');
-else    
-    msg= sprintf('Segmentação dos 16 canais OK!!');
+if (habSegmentaCanais==1)    
+    if (ctError>0)
+        msg= sprintf(' Foram detectados erros de segmentação nos canais: %s. \n Analise as PCs e reajuste os parâmetros.', num2str(cnError));
+        answer= questdlg(msg, 'Erros de segmentação!', 'Ok', 'Ok');
+    else  
+        if (handles.numClusters==1)
+            msg= sprintf('Segmentação dos 16 canais OK!!');
+        end
+    end
 end
 
 % Define mensagem final a ser exibida:
