@@ -19,8 +19,14 @@ for (i=1:length(pc.Location))
         intensity(ct,:)= pc.Intensity(i,:);
     end    
 end
-pcThresholded= pointCloud(location, 'Intensity', intensity);
 
-fShowPcFiltradaPorDistancia(pc, pcThresholded, handles);
-
+if (ct>0)   
+    pcThresholded= pointCloud(location, 'Intensity', intensity);
+    fShowPcFiltradaPorDistancia(pc, pcThresholded, handles);
+else
+    msg= sprintf('Não foram detectados pontos com esses parâmetro: \n Verifica os thresholds máx. e mín.');
+    figMsg= msgbox(msg);
+    uiwait(figMsg);
+    pcThresholded.Count= 0;
+end
 end

@@ -4,7 +4,7 @@
 % Data: 08/08/2022
 % Utilização da função "pcsegdist()" para segmentar uma nuvem de pontos.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function fSegmentaPC(handles)
+function handles= fSegmentaPC(handles)
 clc;
 
 % Para usar o close all é necessário mudar o HandleVisibility do
@@ -28,29 +28,71 @@ if (handles.habSegmentaPorThreshold)
     pcThresholded= fPcFiltraDistancia(pcDenoised, handles);
     
     % Se estiver habilitado salva a PC segmentada:
-    if (handles.habSavePcSeg)        
-        answer = questdlg('Salvar a PC segemntada?', 'Dessert Menu', 'Sim', 'Não', 'Sim');
+    if (handles.HabSalvarPcSeg && pcThresholded.Count)
+        answer = questdlg('Salvar a PC segmentada?', '', 'Sim', 'Não', 'Redefinir folder para salvar', 'Sim');
         switch answer
             case 'Sim'
-                pathSavePC= fullfile(handles.pathSavePC, handles.nameFolderSavePcSeg);
-                if (isdir(pathSavePC))
-                    % Verifica se já tem arquivos .pcds salvos, se sim será
-                    % dada continuidade a numeração:
-                    fullPath= fullfile(pathSavePC, '*.pcd');
-                    result= dir(fullPath);
-                    numFilesPCD= length(result);
-                    numFile= numFilesPCD + 1;
-                    nameFile= sprintf('%0.4d.pcd',numFile);
-                    fullPath= fullfile(pathSavePC, nameFile);
-                    pcwrite(pcThresholded, fullPath); 
-                else
-                    mkdir(pathSavePC)
-                    numFile= 1;
-                    nameFile= sprintf('%0.4d.pcd',numFile);
-                    fullPath= fullfile(pathSavePC, nameFile);
-                    pcwrite(pcThreshold, fullPath); 
-                end
-            case 'Não' 
+                    % Se o path para salvar ainda não foi definido será aberta
+                    % uma tela para escolher o folder:
+                    if strcmp(handles.pathSavePC, "")
+                        handles.pathSavePC= uigetdir(handles.pathSavePC);
+                        if ~(handles.pathSavePC)
+                            msg= sprintf(' Operação de salvar a PC Segmentada foi cancelada.');
+                            figMsg= msgbox(msg);
+                            uiwait(figMsg);
+                            return; % Sai da função!
+                        end;
+                    end
+
+                    pathSavePC= fullfile(handles.pathSavePC, handles.nameFolderSavePcSeg);
+                    if (isdir(pathSavePC))
+                        % Verifica se já tem arquivos .pcds salvos, se sim será
+                        % dada continuidade a numeração:
+                        fullPath= fullfile(pathSavePC, '*.pcd');
+                        result= dir(fullPath);
+                        numFilesPCD= length(result);
+                        numFile= numFilesPCD + 1;
+                        nameFile= sprintf('%0.4d.pcd',numFile);
+                        fullPath= fullfile(pathSavePC, nameFile);
+                        pcwrite(pcThresholded, fullPath); 
+                    else
+                        mkdir(pathSavePC)
+                        numFile= 1;
+                        nameFile= sprintf('%0.4d.pcd',numFile);
+                        fullPath= fullfile(pathSavePC, nameFile);
+                        pcwrite(pcThresholded, fullPath); 
+                    end
+
+            case 'Redefinir folder para salvar'   
+                    handles.pathSavePC= uigetdir(handles.pathSavePC);
+                    if ~(handles.pathSavePC)
+                        msg= sprintf(' Operação de redefinição do folder foi cancelada.');
+                        figMsg= msgbox(msg);
+                        uiwait(figMsg);
+                        return; % Sai da função!
+                    end
+                    
+                    pathSavePC= fullfile(handles.pathSavePC, handles.nameFolderSavePcSeg);
+                    if (isdir(pathSavePC))
+                        % Verifica se já tem arquivos .pcds salvos, se sim será
+                        % dada continuidade a numeração:
+                        fullPath= fullfile(pathSavePC, '*.pcd');
+                        result= dir(fullPath);
+                        numFilesPCD= length(result);
+                        numFile= numFilesPCD + 1;
+                        nameFile= sprintf('%0.4d.pcd',numFile);
+                        fullPath= fullfile(pathSavePC, nameFile);
+                        pcwrite(pcThresholded, fullPath); 
+                    else
+                        mkdir(pathSavePC)
+                        numFile= 1;
+                        nameFile= sprintf('%0.4d.pcd',numFile);
+                        fullPath= fullfile(pathSavePC, nameFile);
+                        pcwrite(pcThresholded, fullPath); 
+                    end
+              
+            case 'Não'
+                    return;
         end
     end 
 else

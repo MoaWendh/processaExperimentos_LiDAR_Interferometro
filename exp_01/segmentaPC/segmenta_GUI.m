@@ -22,7 +22,7 @@ function varargout = segmenta_GUI(varargin)
 
 % Edit the above text to modify the response to help segmenta_GUI
 
-% Last Modified by GUIDE v2.5 01-Feb-2023 10:50:49
+% Last Modified by GUIDE v2.5 11-Feb-2023 17:12:02
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -55,10 +55,12 @@ function segmenta_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % ********************* Parâmetros gerais editáveis:  *********************
 % 
 % Seleciona a PC que será lida no formato ".pcd"
-handles.PcToRead= handles.staticPathReadPC.String;
+handles.PcToRead= 'C:\Projetos\Matlab';
+
 % Seleciona o path onde a PC segmantada será salva:
-handles.pathSavePC= handles.staticPathSavePC.String;
-handles.pathReadPC= "";
+handles.pathBase= 'C:\Projetos\Matlab\Experimentos';
+handles.pathSavePC= "";
+handles.pathReadPC= handles.pathBase;
 handles.nameFolderSavePcSeg= 'segmentada'; 
 
 %
@@ -77,10 +79,9 @@ handles.valThresholdMinDistance= str2double(handles.txtThresholdMinDistance.Stri
 %Se "handles.habFunction_SegmentaLidarData" estiver el nivel alto será habilitada
 % a função "segmentaLidarData()", caso contrário serpa usada a função
 % "pcsegdist".
-handles.habSavePcSeg= handles.checkSalvaPcSegmantada.Value;
 
 handles.extPC= "pcd";
-handles.showPcSegmentada= 1;
+
 
 % Rotina para fechar todas as figuras aberrtas no Matalab:
 %n= length(figure);
@@ -117,26 +118,25 @@ function btPathReadPC_Callback(hObject, eventdata, handles)
 % hObject    handle to btPathReadPC (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-path= fullfile(handles.path,'*.pcd');
+path= fullfile(handles.pathBase,'*.pcd');
 [handles.file, handles.path] = uigetfile(path);
 handles.PcToRead= fullfile(handles.path, handles.file);
 handles.pathReadPC= handles.path;
-handles.staticPathReadPC.String= handles.PcToRead;
+
+if handles.file
+    handles.pathBase= handles.path;
+    handles.btSegmentar.Enable= 'on';
+else
+    msg= sprintf(' Path de leitura da PC indefinido. \n Para liberar a segmentação defina o path.');
+    figMsg= msgbox(msg);
+    uiwait(figMsg);
+    
+    handles.btSegmentar.Enable= 'off';
+end
 
 % Update handles structure
 guidata(hObject, handles);
 
-
-% --- Executes on button press in btPathSavePC.
-function btPathSavePC_Callback(hObject, eventdata, handles)
-% hObject    handle to btPathSavePC (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-handles.pathSavePC= uigetdir(handles.pathSavePC);
-handles.staticPathSavePC.String= handles.pathSavePC;
-
-% Update handles structure
-guidata(hObject, handles);
 
 
 % --- Executes on button press in btSair.
@@ -151,12 +151,17 @@ clc;
 clear;
 
 
-% --- Executes on button press in btExecutar.
-function btExecutar_Callback(hObject, eventdata, handles)
-% hObject    handle to btExecutar (see GCBO)
+% --- Executes on button press in btSegmentar.
+function btSegmentar_Callback(hObject, eventdata, handles)
+% hObject    handle to btSegmentar (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-fSegmentaPC(handles);
+handles= fSegmentaPC(handles);
+
+
+% Update handles structure
+guidata(hObject, handles);
+
 
 
 function txtDistanciaMinima_Callback(hObject, eventdata, handles)
@@ -214,6 +219,7 @@ function txtNumMinPontosPorCluster_Callback(hObject, eventdata, handles)
 %        str2double(get(hObject,'String')) returns contents of txtNumMinPontosPorCluster as a double
 str= get(hObject, 'String');
 handles.valMinPoints= str2num(str);
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -266,14 +272,20 @@ function checkShowPCs_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of checkShowPCs
-value= get(hObject,'Value');
-handles.showPcSegmentada= value;
+handles.showPcSegmentada= get(hObject,'Value');
+
+% Update handles structure
+guidata(hObject, handles);
 
 % --- Executes during object creation, after setting all properties.
 function checkShowPCs_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to checkShowPCs (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
+handles.showPcSegmentada= get(hObject,'Value');
+
+% Update handles structure
+guidata(hObject, handles);
 
 
 % --- Executes on button press in checkSelectSegByThreshold.
@@ -301,6 +313,7 @@ else
     handles.txtThresholdMaxDistance.Enable= 'on';
     handles.habSegmentaPorThreshold= 1; 
 end
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -364,20 +377,13 @@ function checkSalvaPcSegmantada_Callback(hObject, eventdata, handles)
 % hObject    handle to checkSalvaPcSegmantada (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hint: get(hObject,'Value') returns toggle state of checkSalvaPcSegmantada
 
-if (hObject.Value)
-    handles.btPathSavePC.Enable= 'on';
-    handles.habSavePcSeg= 1;
-    handles.staticPathSavePC.Enable= 'on';
-else
-    handles.btPathSavePC.Enable= 'off';
-    handles.habSavePcSeg= 0;
-    handles.staticPathSavePC.Enable= 'off';   
-end
+handles.HabSalvarPcSeg= hObject.Value;
+
 % Update handles structure
 guidata(hObject, handles);
+
 
 
 % --- Executes during object creation, after setting all properties.
@@ -385,24 +391,7 @@ function checkSalvaPcSegmantada_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to checkSalvaPcSegmantada (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
-set(hObject,'Value', 1);
-
-
-% --- Executes during object creation, after setting all properties.
-function staticPathSavePC_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to staticPathSavePC (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-set(hObject, 'Enable', 'on'); 
-
-
-% --- Executes during object creation, after setting all properties.
-function btPathSavePC_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to btPathSavePC (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-set(hObject, 'Enable', 'on'); 
-handles.pathSavePC= 'C:\Projetos\Matlab\Experimentos';
+handles.HabSalvarPcSeg= 0;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -417,6 +406,7 @@ function txtNumMaxPontosPorCluster_Callback(hObject, eventdata, handles)
 %        str2double(get(hObject,'String')) returns contents of txtNumMaxPontosPorCluster as a double
 str= get(hObject, 'String');
 handles.valMaxPoints= str2num(str);
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -459,8 +449,35 @@ function btPathReadPC_CreateFcn(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
-handles.path= 'C:\Projetos\Matlab\Experimentos';
-handles.staticPathReadPC.String= handles.path;
+% Update handles structure
+guidata(hObject, handles);
+
+
+% --- Executes on button press in pushbutton5.
+function pushbutton5_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton5 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Abre janela para escolher as PC a serem rotacionadas:
+path= fullfile(handles.pathBase,'*.pcd');
+[files pathBase]= uigetfile(path,'Selecione uma PC para Visualização.');
+fullPathPC= fullfile(pathBase, files);
+
+if files
+    handles.pathBase= pathBase;
+    % Faz a leitura da PC:
+    pc= pcread(fullPathPC);
+
+    % Exine a PC lida:
+    figure; 
+    pcshow(pc.Location);
+
+    xlabel('X (m)');
+    ylabel('Y (m)');
+    zlabel('Z (m)');
+end
 
 % Update handles structure
 guidata(hObject, handles);
+
