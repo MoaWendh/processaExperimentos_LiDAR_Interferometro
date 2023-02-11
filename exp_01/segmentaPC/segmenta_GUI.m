@@ -22,7 +22,7 @@ function varargout = segmenta_GUI(varargin)
 
 % Edit the above text to modify the response to help segmenta_GUI
 
-% Last Modified by GUIDE v2.5 03-Jan-2023 17:07:23
+% Last Modified by GUIDE v2.5 01-Feb-2023 10:50:49
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -59,6 +59,7 @@ handles.PcToRead= handles.staticPathReadPC.String;
 % Seleciona o path onde a PC segmantada será salva:
 handles.pathSavePC= handles.staticPathSavePC.String;
 handles.pathReadPC= "";
+handles.nameFolderSavePcSeg= 'segmentada'; 
 
 %
 % Parâmetros para segmentação das PCs para definir o ROI do plano, esses 
@@ -116,7 +117,8 @@ function btPathReadPC_Callback(hObject, eventdata, handles)
 % hObject    handle to btPathReadPC (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-[handles.file, handles.path] = uigetfile('C:\Projetos\Matlab\Experimentos\*.pcd');
+path= fullfile(handles.path,'*.pcd');
+[handles.file, handles.path] = uigetfile(path);
 handles.PcToRead= fullfile(handles.path, handles.file);
 handles.pathReadPC= handles.path;
 handles.staticPathReadPC.String= handles.PcToRead;
@@ -130,7 +132,7 @@ function btPathSavePC_Callback(hObject, eventdata, handles)
 % hObject    handle to btPathSavePC (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles.pathSavePC= uigetdir('C:\Projetos\Matlab\Experimentos');
+handles.pathSavePC= uigetdir(handles.pathSavePC);
 handles.staticPathSavePC.String= handles.pathSavePC;
 
 % Update handles structure
@@ -145,7 +147,6 @@ function btSair_Callback(hObject, eventdata, handles)
 
 handles.panelMain.HandleVisibility= 'on';
 close all;
-
 clc;
 clear;
 
@@ -401,7 +402,10 @@ function btPathSavePC_CreateFcn(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 set(hObject, 'Enable', 'on'); 
+handles.pathSavePC= 'C:\Projetos\Matlab\Experimentos';
 
+% Update handles structure
+guidata(hObject, handles);
 
 
 function txtNumMaxPontosPorCluster_Callback(hObject, eventdata, handles)
@@ -447,3 +451,16 @@ function panelMain_SizeChangedFcn(hObject, eventdata, handles)
 % hObject    handle to panelMain (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes during object creation, after setting all properties.
+function btPathReadPC_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to btPathReadPC (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+handles.path= 'C:\Projetos\Matlab\Experimentos';
+handles.staticPathReadPC.String= handles.path;
+
+% Update handles structure
+guidata(hObject, handles);

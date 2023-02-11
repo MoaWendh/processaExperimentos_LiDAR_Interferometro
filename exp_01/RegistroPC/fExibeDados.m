@@ -5,13 +5,13 @@
 % Data do experimento: 25/11/2022
 % Instrumentos: LiDAR PuckLite + Interferômetro.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function  fExibeDados(vetorTransLiDAR, deslocamentoInterferometro, erro, pcFull, param)
+function  fExibeDados(vetorTransLiDAR, deslocamentoInterferometro, erro, pcFull, handles)
 
 transLidarX= vetorTransLiDAR(:,1)';
 transInterfX= deslocamentoInterferometro;
 
 f1=figure;
-f1.Position=[50,100,1200,900];
+f1.Position=[50,50,1300,700];
 
 % Calcula o erro médio:
 erro.XMedio= mean(erro.X);
@@ -54,8 +54,8 @@ title(ax4,texto,'Color','k');
 % Exibe a PC concatenada em uma nova figura.
 f2=figure;
 pcshow(pcFull);
-titulo= ['PCs concatenadas= ', int2str(param.val.numFolders), '  Algortimo Reg.= ', param.algorithm.Reg,' Algorithm subAmostr= ', param.algorithm.SubSample, ' gridSize= ', num2str(param.val.DownSampleAtual) ]
+titulo= ['PCs concatenadas= ', int2str(handles.numFoldersValidos), '  Algortimo Reg.= ', handles.algorithm.Reg,' Algorithm subAmostr= ', handles.algorithm.SubSample, ' gridSize= ', num2str(handles.val.DownSampleAtual) ]
 title(titulo);
-f2.Position=[1250,100,1200,900]
+f2.Position=[80,80,1200,700];
 
 end

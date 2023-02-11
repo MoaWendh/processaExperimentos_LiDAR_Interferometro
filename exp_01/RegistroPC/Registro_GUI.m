@@ -1,18 +1,18 @@
-function varargout = testaAlgoritmosRegistro_GUI(varargin)
-%TESTAALGORITMOSREGISTRO_GUI MATLAB code file for testaAlgoritmosRegistro_GUI.fig
-%      TESTAALGORITMOSREGISTRO_GUI, by itself, creates a new TESTAALGORITMOSREGISTRO_GUI or raises the existing
+function varargout = Registro_GUI(varargin)
+%REGISTRO_GUI MATLAB code file for Registro_GUI.fig
+%      REGISTRO_GUI, by itself, creates a new REGISTRO_GUI or raises the existing
 %      singleton*.
 %
-%      H = TESTAALGORITMOSREGISTRO_GUI returns the handle to a new TESTAALGORITMOSREGISTRO_GUI or the handle to
+%      H = REGISTRO_GUI returns the handle to a new REGISTRO_GUI or the handle to
 %      the existing singleton*.
 %
-%      TESTAALGORITMOSREGISTRO_GUI('Property','Value',...) creates a new TESTAALGORITMOSREGISTRO_GUI using the
+%      REGISTRO_GUI('Property','Value',...) creates a new REGISTRO_GUI using the
 %      given property value pairs. Unrecognized properties are passed via
-%      varargin to testaAlgoritmosRegistro_GUI_OpeningFcn.  This calling syntax produces a
+%      varargin to Registro_GUI_OpeningFcn.  This calling syntax produces a
 %      warning when there is an existing singleton*.
 %
-%      TESTAALGORITMOSREGISTRO_GUI('CALLBACK') and TESTAALGORITMOSREGISTRO_GUI('CALLBACK',hObject,...) call the
-%      local function named CALLBACK in TESTAALGORITMOSREGISTRO_GUI.M with the given input
+%      REGISTRO_GUI('CALLBACK') and REGISTRO_GUI('CALLBACK',hObject,...) call the
+%      local function named CALLBACK in REGISTRO_GUI.M with the given input
 %      arguments.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
@@ -20,16 +20,16 @@ function varargout = testaAlgoritmosRegistro_GUI(varargin)
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help testaAlgoritmosRegistro_GUI
+% Edit the above text to modify the response to help Registro_GUI
 
-% Last Modified by GUIDE v2.5 06-Jan-2023 18:06:26
+% Last Modified by GUIDE v2.5 31-Jan-2023 18:15:42
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @testaAlgoritmosRegistro_GUI_OpeningFcn, ...
-                   'gui_OutputFcn',  @testaAlgoritmosRegistro_GUI_OutputFcn, ...
+                   'gui_OpeningFcn', @Registro_GUI_OpeningFcn, ...
+                   'gui_OutputFcn',  @Registro_GUI_OutputFcn, ...
                    'gui_LayoutFcn',  [], ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -44,8 +44,8 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before testaAlgoritmosRegistro_GUI is made visible.
-function testaAlgoritmosRegistro_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
+% --- Executes just before Registro_GUI is made visible.
+function Registro_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -57,8 +57,9 @@ function testaAlgoritmosRegistro_GUI_OpeningFcn(hObject, eventdata, handles, var
 % Os únicos paths que precisam serem definidos são o handles.path.BaseRead e
 % o handles.path.BaseSave:
 
-handles.path.BaseRead= handles.staticPathRead.String;
-handles.path.BaseSave= handles.staticPathSave.String;
+pathInicial= 'C:\Projetos\Matlab\Experimentos\2022.11.25 - LiDAR Com Interferometro\experimento_01\pcd';
+handles.path.BaseRead= pathInicial; 
+handles.path.BaseSave= "";
 
 % Outros paths fixos, que são gerados automaticametne pelo programa:
 handles.path.PCReg= '\out\pcReg'; % Folder onde serão salvas as PCs registradas
@@ -66,22 +67,21 @@ handles.path.PCCanais= '\out\pcRegPorCanal\cn'; % Folder onde serão salvas as P
 handles.path.PCFull= '\out\pcRegConcatenada'; % Folder onde serão salvas as PCs full, ou seja, concatenadas após o resgistro.
 handles.path.tform= '\out\tform'; % Folder onde serão salvas as PCs full, ou seja, concatenadas após o resgistro.
 
-% Captura o número de folders contendo as PCs corresponde ao nº de distãncias
-% medidas:
-handles.val.numFolders= str2double(handles.txtDistanciasMedidas.String); 
 
 % Definição de alguns nomes de arquivos:
 handles.name.FolderBase= '\2022_11_25_01_';
 handles.name.FileBase  = '\2022_11_25_01_';
 handles.name.FileTForm = 'tform';
-handles.name.FileDataInterferometro = '\interferometro_exp_01.mat';
+handles.name.referenceDataFile = "";
+
 
 % definição da extensão de alguns arquivos:
 handles.name.extPC= 'pcd';
+handles.name.extDataFile= 'mat';
 
 % Parametros que definem quantas PCs serão lidas por folder:
-handles.val.PcIni= str2num(handles.btPcInicial.String); %3;
-handles.val.PcFim= str2num(handles.btPcFinal.String); %3;
+handles.val.PcIni= str2num(handles.editPcInicial.String); %3;
+handles.val.PcFim= str2num(handles.editPcFinal.String); %3;
 
 % Parâmetros com flags para habilitar a exibição de dados:
 handles.show.PCReg= handles.rdExibeRegistro.Value;
@@ -102,8 +102,12 @@ handles.algorithm.SubSample= 'gridAverage';
 handles.val.mergeSize= 0.001;
 
 % Parâmetros para avaliação dos algoritmos de registro:
-handles.val.VariacaoGridSize= 10;
+handles.val.numVariacaoGridSize= 10;
 handles.val.VariacaoMetrica= 2;
+
+% Flague que indica finalziação dos registros das PCs:
+handles.registroFinalizado= 0;
+
 
 % Parâmetros para efetuar o downSample da PC. No Matalab tem 3 métodos:
 % 1) "pcdownsample(ptCloudIn,'random',percentage)", onde a escolha dos pontos
@@ -123,19 +127,19 @@ handles.val.maxNumPoints= str2double(handles.txtMaxNumPoints.String); %6;  % Usa
 
 handles.enable.SetPercentual= 'off';
 
-% Choose default command line output for testaAlgoritmosRegistro_GUI
+% Choose default command line output for Registro_GUI
 handles.output = hObject;
 
 % Update handles structure
 guidata(hObject, handles);
 
 
-% UIWAIT makes testaAlgoritmosRegistro_GUI wait for user response (see UIRESUME)
+% UIWAIT makes Registro_GUI wait for user response (see UIRESUME)
 % uiwait(handles.panelBase);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = testaAlgoritmosRegistro_GUI_OutputFcn(hObject, eventdata, handles)
+function varargout = Registro_GUI_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -173,23 +177,31 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in btExecutar.
-function btExecutar_Callback(hObject, eventdata, handles)
-% hObject    handle to btExecutar (see GCBO)
+% --- Executes on button press in btAnalisaRegistros.
+function btAnalisaRegistros_Callback(hObject, eventdata, handles)
+% hObject    handle to btAnalisaRegistros (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 clc;
 close all;
-fprintf('Iniciando teste de desempenho do regostor das PCs do LiDAR...\n');
+
+msg= sprintf('Defina o arquivo .mat que contém os dados de referência.');
+msgfig= msgbox(msg,'Atenção','warn');
+uiwait(msgfig);
+
+% Define o arquivo para carregar os dados de refência medidos pelo
+% interferômetro:
+fullFile= sprintf('%s\\*.%s', handles.path.BaseRead, handles.name.extDataFile); 
+[handles.name.referenceDataFile handles.path.DataFile]= uigetfile(fullFile);
+
 % Chama callback para realizar o testa de desempenho de registro: 
-if (handles.path.BaseRead== 0) 
-   msg= msgbox('Path de leitura inválido.', 'Erro no path!', 'error'); 
-elseif (handles.path.BaseSave== 0)   
-   msg= msgbox('Path de escrita inválido.', 'Erro no path!', 'error'); 
-elseif (handles.val.PcFim<handles.val.PcIni)
-   msg= msgbox('Prametro PC inicial deve ser maior que PC final.', 'Parâmetro ensaio errado!', 'error');    
-else
-    fTestaRegistro(handles);
+if (handles.registroFinalizado)
+    if (handles.name.referenceDataFile~= "")
+        fAnalisaRegistros(handles);
+    else
+        msg= sprintf('Antes de prosseguir defina o arquivo com dados de referência.');
+        msgbox(msg, 'Error', 'error');
+    end    
 end
 
 % --- Executes on selection change in popupAlgoritmoSubAmostra.
@@ -255,22 +267,57 @@ handles.val.registerMetric='pointToPlane';
 guidata(hObject, handles);
 
 
-% --- Executes on button press in btPathBaseRead.
-function btPathBaseRead_Callback(hObject, eventdata, handles)
-% hObject    handle to btPathBaseRead (see GCBO)
+% --- Executes on button press in btRegistra.
+function btRegistra_Callback(hObject, eventdata, handles)
+% hObject    handle to btRegistra (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-handles.path.BaseRead= uigetdir(handles.staticPathRead.String);
-if (handles.path.BaseRead==0)
-    handles.staticPathRead.String= "Path Inválido!!!!!";
-    handles.staticPathRead.ForegroundColor= [1, 0, 0];
-else    
-    handles.staticPathRead.String= handles.path.BaseRead;
-    handles.staticPathRead.ForegroundColor= [0, 0.447, 0.741];
+% Exibe mensagem:
+msg= sprintf(' Carregando PCs no buffer.');
+handles.editMsgs.String= msg;
+
+answer = questdlg('Seleciona uma das opções abaixo', ...
+	'Registro de nuvem de pontos', ...
+	'Múltiplos folders', 'Arquivos .pcd','Múltiplos folders');
+% Handle response
+switch answer
+    case 'Múltiplos folders'
+        handles.multiplosFolders= 1;
+        % Seleciona os folders que contém as PCs:
+        handles.path.BaseRead= uigetdir(handles.path.BaseRead);
+        if (handles.path.BaseRead==0)
+            handles.editMsgs.String= "Path Inválido!!!!!";
+            handles.editMsgs.ForegroundColor= [1, 0, 0];
+        else
+            msg= sprintf('Ler as PCs de: \n%s', handles.path.BaseRead);
+            handles.editMsgs.String= msg;
+            handles.editMsgs.ForegroundColor= [0, 0.447, 0.741];
+        end
+        
+    case 'Arquivos .pcd'
+        handles.multiplosFolders= 0;
+        % Selciona as mmultiplas PCs:    
+        fullFiles= sprintf('%s\\*.%s', handles.path.BaseRead, handles.name.extPC); 
+        [handles.name.PCsFiles handles.path.BaseRead]= uigetfile(fullFiles, 'MultiSelect', 'on');
 end
+
+% Exibe mensagem:
+msg= fprintf(' \n Carregando as PCs no buffer...');
+
+% Carrega as PCs originais geradas no experimento:
+handles= fCarregaPCs(handles);
+
+msg= fprintf(' \n Efetuando o registro das PCs carregadas no Buffer...');
+
+% Chama a função para registro das PCs:
+handles= fRegistraPC(handles);
+
+msg= fprintf(' \n Registro das PCs concluído.');
+
 % Update handles structure
 guidata(hObject, handles);
+
 
 
 % --------------------------------------------------------------------
@@ -445,28 +492,32 @@ function btPathBaseSave_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-handles.path.BaseSave= uigetdir(handles.staticPathSave.String);
+handles.path.BaseSave= uigetdir(handles.path.BaseSave);
 if (handles.path.BaseSave==0)
     handles.staticPathSave.String= "Path Inválido!!!!!";
     handles.staticPathSave.ForegroundColor= [1, 0, 0];
-else    
-    handles.staticPathSave.String= handles.path.BaseSave;
+else
+    msg= sprintf('Salvar as PCs em: \n%s', handles.path.BaseSave);
+    handles.staticPathSave.String= msg;
     handles.staticPathSave.ForegroundColor= [0, 0.447, 0.741];
+    
+    % Chama a função para salvar as PCs e tforms:
+    fSalvaPCsRegistradas(handles);
 end
 % Update handles structure
 guidata(hObject, handles);
 
 
-function txtNumIteracoes_Callback(hObject, eventdata, handles)
-% hObject    handle to txtNumIteracoes (see GCBO)
+function txtNumVariacoesGridSize_Callback(hObject, eventdata, handles)
+% hObject    handle to txtNumVariacoesGridSize (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of txtNumIteracoes as text
-%        str2double(get(hObject,'String')) returns contents of txtNumIteracoes as a double
+% Hints: get(hObject,'String') returns contents of txtNumVariacoesGridSize as text
+%        str2double(get(hObject,'String')) returns contents of txtNumVariacoesGridSize as a double
 str= get(hObject,'String');
-handles.val.VariacaoGridSize= str2num(str);
-if (handles.val.VariacaoGridSize<1)
+handles.val.numVariacaoGridSize= str2num(str);
+if (handles.val.numVariacaoGridSize<1)
     set(hObject,'String', 'Null');
     set(hObject,'ForegroundColor', [1, 0, 0]);    
     msg= msgbox('Escolha um inteiro maior que zero.', 'Valor inválido!', 'error'); 
@@ -476,14 +527,10 @@ end
 % Update handles structure
 guidata(hObject, handles);
 
-str= get(hObject,'String');
-handles.val.numFolders= str2double(str);
-% Update handles structure
-guidata(hObject, handles);
 
 % --- Executes during object creation, after setting all properties.
-function txtNumIteracoes_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to txtNumIteracoes (see GCBO)
+function txtNumVariacoesGridSize_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtNumVariacoesGridSize (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -493,7 +540,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 str= get(hObject,'String');
-handles.val.VariacaoGridSize= str2num(str);
+handles.val.numVariacaoGridSize= str2num(str);
 % Update handles structure
 guidata(hObject, handles);
 
@@ -509,26 +556,6 @@ clear;
 clc;
 
 
-function txtDistanciasMedidas_Callback(hObject, eventdata, handles)
-% hObject    handle to txtDistanciasMedidas (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of txtDistanciasMedidas as text
-%        str2double(get(hObject,'String')) returns contents of txtDistanciasMedidas as a double
-str= get(hObject,'String');
-handles.val.numFolders= str2double(str);
-if (handles.val.numFolders<2)
-    set(hObject,'String', 'Null');
-    set(hObject,'ForegroundColor', [1, 0, 0]);    
-    msg= msgbox('Valor mínimo deve ser 2.', 'Valor inválido!', 'error'); 
-else
-    set(hObject,'ForegroundColor', [0, 0.447, 0.741]);
-end
-% Update handles structure
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function txtDistanciasMedidas_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to txtDistanciasMedidas (see GCBO)
@@ -542,26 +569,18 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes during object creation, after setting all properties.
-function staticPathRead_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to staticPathRead (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-set(hObject, 'String', 'C:\Projetos\Matlab\Experimentos\2022.11.25 - LiDAR Com Interferometro\experimento_01\pcd');
-
-
 
 % --- Executes during object creation, after setting all properties.
 function staticPathSave_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to staticPathSave (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
-set(hObject, 'String', 'C:\Projetos\Matlab\Experimentos\2022.11.25 - LiDAR Com Interferometro\experimento_01');
+set(hObject, 'String', 'Salvar as PCs em:');
 
 
 % --- Executes during object creation, after setting all properties.
-function btPathBaseRead_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to btPathBaseRead (see GCBO)
+function btRegistra_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to btRegistra (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -588,13 +607,13 @@ function panelBase_CreateFcn(hObject, eventdata, handles)
 
 
 
-function btPcInicial_Callback(hObject, eventdata, handles)
-% hObject    handle to btPcInicial (see GCBO)
+function editPcInicial_Callback(hObject, eventdata, handles)
+% hObject    handle to editPcInicial (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of btPcInicial as text
-%        str2double(get(hObject,'String')) returns contents of btPcInicial as a double
+% Hints: get(hObject,'String') returns contents of editPcInicial as text
+%        str2double(get(hObject,'String')) returns contents of editPcInicial as a double
 str= get(hObject, 'String')
 handles.val.PcIni= str2num(str);
 if (handles.val.PcIni<1)
@@ -610,8 +629,8 @@ guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
-function btPcInicial_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to btPcInicial (see GCBO)
+function editPcInicial_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to editPcInicial (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -623,13 +642,13 @@ end
 
 
 
-function btPcFinal_Callback(hObject, eventdata, handles)
-% hObject    handle to btPcFinal (see GCBO)
+function editPcFinal_Callback(hObject, eventdata, handles)
+% hObject    handle to editPcFinal (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of btPcFinal as text
-%        str2double(get(hObject,'String')) returns contents of btPcFinal as a double
+% Hints: get(hObject,'String') returns contents of editPcFinal as text
+%        str2double(get(hObject,'String')) returns contents of editPcFinal as a double
 str= get(hObject, 'String')
 handles.val.PcFim= str2num(str);
 if (handles.val.PcFim<1)
@@ -645,8 +664,8 @@ guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
-function btPcFinal_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to btPcFinal (see GCBO)
+function editPcFinal_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to editPcFinal (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -687,5 +706,39 @@ handles.show.resultAnalise= val;
 % Update handles structure
 guidata(hObject, handles);
 
+
+function edit11_Callback(hObject, eventdata, handles)
+% hObject    handle to editMsgs (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of editMsgs as text
+%        str2double(get(hObject,'String')) returns contents of editMsgs as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function editMsgs_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to editMsgs (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in btSelecionaPCs.
+function btSelecionaPCs_Callback(hObject, eventdata, handles)
+% hObject    handle to btSelecionaPCs (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+fullFiles= sprintf('%s\\*.%s', handles.path.BaseRead, handles.name.extPC); 
+[handles.name.PCsFiles handles.path.BaseRead]= uigetfile(fullFiles, 'MultiSelect', 'on');
+
+% Update handles structure
+guidata(hObject, handles);
 
 

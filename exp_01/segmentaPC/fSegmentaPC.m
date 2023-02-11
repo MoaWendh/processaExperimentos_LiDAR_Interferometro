@@ -32,19 +32,22 @@ if (handles.habSegmentaPorThreshold)
         answer = questdlg('Salvar a PC segemntada?', 'Dessert Menu', 'Sim', 'Não', 'Sim');
         switch answer
             case 'Sim'
-                if (isdir(handles.pathSavePC))
-                    fullPath= fullfile(handles.pathSavePC, '*.pcd');
+                pathSavePC= fullfile(handles.pathSavePC, handles.nameFolderSavePcSeg);
+                if (isdir(pathSavePC))
+                    % Verifica se já tem arquivos .pcds salvos, se sim será
+                    % dada continuidade a numeração:
+                    fullPath= fullfile(pathSavePC, '*.pcd');
                     result= dir(fullPath);
                     numFilesPCD= length(result);
                     numFile= numFilesPCD + 1;
                     nameFile= sprintf('%0.4d.pcd',numFile);
-                    fullPath= fullfile(handles.pathSavePC, nameFile);
+                    fullPath= fullfile(pathSavePC, nameFile);
                     pcwrite(pcThresholded, fullPath); 
                 else
-                    mkdir(handles.pathSavePC)
+                    mkdir(pathSavePC)
                     numFile= 1;
                     nameFile= sprintf('%0.4d.pcd',numFile);
-                    fullPath= fullfile(handles.pathSavePC, nameFile);
+                    fullPath= fullfile(pathSavePC, nameFile);
                     pcwrite(pcThreshold, fullPath); 
                 end
             case 'Não' 
