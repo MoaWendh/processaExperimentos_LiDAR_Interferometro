@@ -104,7 +104,7 @@ handles.staticPathSave.String= handles.pathSave;
 % Habilita o gráfico axes1 para exibir a PC:
 figA= figure;
 pcshow(handles.pathPC);
-figA.Position= [1350, 100, 1000, 850];
+figA.Position= [20, 50, 1400, 700];
 
 % Update handles structure
 guidata(hObject, handles);

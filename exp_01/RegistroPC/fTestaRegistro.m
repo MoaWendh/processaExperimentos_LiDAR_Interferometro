@@ -9,23 +9,26 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function fTestaRegistro(handles)
-% Carrega os resultados de medição feitas diretamente no interferômetro
-% que foram obtidos no experimento realizado no lab. do CERTI:
-pathDataInterferomtero= sprintf('%s%s', handles.path.BaseRead, handles.name.FileDataInterferometro);
-medicoes= load(pathDataInterferomtero);
+% Se for ahabilitada aepasn o a função de registro, sem análise, não serão 
+% carregados os dados de referência obtidos nas medições feitas diretamente 
+% no interferômetro. Esses dados podem ser lidos de um arquivo *.dat:
+if ~(handles.rdHabilitaSelecaoPCsApenasRegistro.Value)
+    pathDadosReferencia= sprintf('%s%s', handles.path.DataFile, handles.name.referenceDataFile);
+    DadosReferencia= load(pathDadosReferencia);
+end
 
 % Nesta seção é avaliado o desempenho dos registros considerando a
 % variação do "gridSize" usado para subamostrar as PCs.
-fprintf(' Testando %d parâmetros para os algoritmos: \n',handles.val.VariacaoGridSize);
+fprintf(' Testando %d parâmetros para os algoritmos: \n',handles.val.numVariacaoGridSize);
 fprintf(' - Registro: %s \n', handles.algorithm.Reg);
 fprintf(' - Subamostrage: %s\n',handles.algorithm.SubSample);
 fprintf('Val. parâm. sub-amostragem: \n ');
 
 % Carrega as PCs originais geradas no experimento:
-[pc pcDenoised]= fCarregaPCs(handles);
+[pc pcDenoised handles]= fCarregaPCs(handles);
 
 % Escolhe o parâmetros em função do algoritmo de sub amostragem selecionado anteriormente:
-for (i=1:handles.val.VariacaoGridSize)
+for (i=1:handles.val.numVariacaoGridSize)
     switch (handles.algorithm.SubSample)
         case 'Random'
             handles.val.DownSample(i)= (i/100)*handles.val.DownSampleIni;
@@ -43,7 +46,7 @@ for (i=1:handles.val.VariacaoGridSize)
     [tform{i} pcFull{i}]= fRegistraPC(pc, pcDenoised, handles); 
 
     % Efetua a análise do desempenho do registro das PCs
-    [vetorTransLiDAR{i} deslocamentoInterferometro{i} erro{i}]= fAnalisaDados(tform{i}, medicoes, pcFull{i}, handles);
+    [vetorTransLiDAR{i} deslocamentoInterferometro{i} erro{i}]= fAnalisaDados(tform{i}, DadosReferencia, pcFull{i}, handles);
     % Exibe o resultado da análise se esta função estiver habilitada:
     if (handles.show.resultAnalise)
         fExibeDados(vetorTransLiDAR{i}, deslocamentoInterferometro{i}, erro{i}, pcFull{i}, handles);

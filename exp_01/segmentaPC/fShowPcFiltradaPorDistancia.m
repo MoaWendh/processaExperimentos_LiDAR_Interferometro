@@ -21,6 +21,6 @@ title(msg);
 xlabel('X (m)');
 ylabel('Y (m)');
 zlabel('Z (m)');
-fig.Position= [10, 40, 1600, 950];
+fig.Position= [10, 50, 1500, 700];
 
 end

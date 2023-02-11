@@ -28,7 +28,7 @@ zlabel('Z (m)');
 
 f1.Resize= 'on';
 %f1.WindowState= 'maximized';
-f1.Position= [10 50 1600 1000];
+f1.Position= [10 20 1200 700];
 
 % Plota o histograma com o erro médio e desvio padrão 
 f2=figure;
@@ -38,7 +38,7 @@ msg= sprintf('Histograma - distâncias pontos-plano (Média= %0.4fm - DP= %0.4fm
 title(msg);
 f2.Resize= 'on';
 %f1.WindowState= 'maximized';
-f2.Position= [1630 50 900 1000];
+f2.Position= [30 50 1200 700];
 
 
 % Verifica se o folder onde serão salvas as figuras existe, caso contrário 
